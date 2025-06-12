@@ -43,7 +43,6 @@ export default function Dashboard() {
     const userData = localStorage.getItem("github_user")
 
     if (!token || !userData) {
-      router.push("/auth")
       return
     }
 
