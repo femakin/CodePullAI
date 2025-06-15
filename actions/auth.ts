@@ -27,17 +27,12 @@ export async function signOut() {
 }
 
 export async function signInWithOAuth(type: string) {
-
-    const origin = (await headers()).get('origin')
-
     const supabase = await createClient();
-
-    console.log(origin, "kkkk")
 
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: type as Provider,
         options: {
-            redirectTo: `${origin}/auth-callback/callback`,
+            redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth-callback/callback`,
         },
     })
 

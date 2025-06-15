@@ -73,8 +73,6 @@ export async function POST(request: NextRequest) {
   try {
     const { repoId, action, repoName, repoOwner } = await request.json()
 
-    console.log(repoId, action, repoName, repoOwner, "repoId, action")
-
     if (action === "enable_webhook") {
       // First verify the repository exists and user has access
       try {
