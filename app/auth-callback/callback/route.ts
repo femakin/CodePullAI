@@ -7,6 +7,8 @@ import { redirect } from 'next/navigation';
 export async function GET(request: Request) {
     const { searchParams, origin } = new URL(request.url)
 
+    console.log(origin, "origin")
+
 
     const code = searchParams.get('code')
     // if "next" is in param, use it as the redirect URL
