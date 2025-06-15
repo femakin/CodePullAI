@@ -36,6 +36,10 @@ export async function signInWithOAuth(type: string) {
         },
     })
 
+    console.log(origin, "originnnn")
+    console.log(data, 'data')
+
+
     if (error) {
         redirect("/error")
     }

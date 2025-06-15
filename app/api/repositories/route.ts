@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
 
   const { data } = await supabase.auth.getUser()
 
-  const { data: { session } } = await supabase.auth.getSession()  
+  const { data: { session } } = await supabase.auth.getSession()
 
   const github_token = session?.provider_token
 
@@ -55,13 +55,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-
   const supabase = await createClient()
-
   const { data } = await supabase.auth.getUser()
-
-  const { data: { session } } = await supabase.auth.getSession()  
-
+  const { data: { session } } = await supabase.auth.getSession()
   const github_token = session?.provider_token
 
   if (data.user?.aud !== "authenticated") {
@@ -78,18 +74,40 @@ export async function POST(request: NextRequest) {
     const { repoId, action, repoName, repoOwner } = await request.json()
 
     if (action === "enable_webhook") {
+      // First verify the repository exists and user has access
+      try {
+        await octokit.request('GET /repos/{owner}/{repo}', {
+          owner: repoOwner,
+          repo: repoName,
+          headers: {
+            'X-GitHub-Api-Version': '2022-11-28'
+          }
+        })
+      } catch (error: any) {
+        if (error.status === 404) {
+          return NextResponse.json({ error: "Repository not found or you don't have access to it" }, { status: 404 })
+        }
+        throw error
+      }
+
+      // Verify the webhook URL is not localhost
+      const webhookUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/webhook/github`
+      if (webhookUrl.includes('localhost')) {
+        return NextResponse.json({ error: "Webhook URL cannot be localhost. Please use a public URL." }, { status: 400 })
+      }
+
       // Create webhook on the repository
-      
-      const webhookResponse = await octokit.request(`POST /repos/${repoOwner}/${repoName}/hooks`, {
+      const webhookResponse = await octokit.request(`POST /repos/{owner}/{repo}/hooks`, {
         owner: repoOwner,
         repo: repoName,
         name: 'web',
         active: true,
         events: [
+          'push',
           'pull_request'
         ],
         config: {
-          url: `${process.env.NEXT_PUBLIC_APP_URL}/api/webhook/github`,
+          url: webhookUrl,
           content_type: 'json',
           insecure_ssl: '0'
         },
@@ -127,8 +145,11 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ error: "Invalid action" }, { status: 400 })
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error managing webhook:", error)
+    if (error.status === 404) {
+      return NextResponse.json({ error: "Repository not found or you don't have access to it" }, { status: 404 })
+    }
     return NextResponse.json({ error: "Failed to manage webhook" }, { status: 500 })
   }
 }

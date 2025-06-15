@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
+    "postinstall": "prisma generate",
     "start": "next start",
     "lint": "next lint"
   },
@@ -59,6 +60,7 @@
     "sonner": "^1.7.1",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
+    "xlsx": "^0.18.5",
     "zod": "^3.24.1"
   },
   "devDependencies": {
