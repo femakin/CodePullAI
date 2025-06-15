@@ -14,11 +14,14 @@ export async function GET(request: Request) {
 
     if (code) {
         const supabase = await createClient()
-        const { error } = await supabase.auth.exchangeCodeForSession(code)
+        const { error, data } = await supabase.auth.exchangeCodeForSession(code)
+        console.log(data, "data")
+
         if (!error) {
 
             //add new user to database
             const { data, error: userError } = await supabase.auth.getUser()
+
             if (userError) {
                 console.log("Error fetching user data", userError?.message)
                 return NextResponse.redirect(`${origin}/error`)
