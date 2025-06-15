@@ -39,6 +39,8 @@ export default function LandingPage() {
               Connect GitHub
             </Button>
           </Link>
+
+          
           <Button variant="outline" size="lg" className="text-lg px-8">
             View Demo
           </Button>
