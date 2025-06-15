@@ -6,9 +6,10 @@ import { Github, Bot, CheckCircle } from "lucide-react"
 import { useRouter } from "next/navigation"
 import LoginGithub from "@/components/LoginGithub"
 
+
 export default function AuthPage() {
   const router = useRouter()
-  
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -60,6 +61,8 @@ export default function AuthPage() {
             ← Back to Home
           </Button>
         </div>
+
+
       </div>
     </div>
   )
