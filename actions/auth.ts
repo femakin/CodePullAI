@@ -7,44 +7,80 @@ import { headers } from "next/headers";
 import { Provider } from "@supabase/supabase-js";
 
 export async function getUserSession() {
-    const supabase = await createClient();
-    const { error, data } = await supabase.auth.getUser()
-    if (error) return null
-    return { status: "success", user: data?.user }
+    try {
+        const supabase = await createClient();
+        if (!supabase) {
+            console.error('Failed to create Supabase client');
+            return null;
+        }
+        const { error, data } = await supabase.auth.getUser();
+        if (error) {
+            console.error('Error getting user session:', error);
+            return null;
+        }
+        return { status: "success", user: data?.user };
+    } catch (error) {
+        console.error('Unexpected error in getUserSession:', error);
+        return null;
+    }
 }
 
 export async function signOut() {
-    const supabase = await createClient();
+    try {
+        const supabase = await createClient();
+        if (!supabase) {
+            console.error('Failed to create Supabase client');
+            redirect('/error');
+        }
 
-    const { error } = await supabase.auth.signOut()
+        const { error } = await supabase.auth.signOut();
+        if (error) {
+            console.error('Error signing out:', error);
+            redirect('/error');
+        }
 
-    if (error) {
-        redirect('/error')
+        revalidatePath('/', 'layout');
+        redirect('/login');
+    } catch (error) {
+        console.error('Unexpected error in signOut:', error);
+        redirect('/error');
     }
-
-    revalidatePath('/', 'layout')
-    redirect('/login')
 }
 
 export async function signInWithOAuth(type: string) {
-    const supabase = await createClient();
+    try {
+        const supabase = await createClient();
+        if (!supabase) {
+            console.error('Failed to create Supabase client');
+            redirect('/error');
+        }
 
-    const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: type as Provider,
-        options: {
-            redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth-callback/callback`,
-        },
-    })
+        if (!process.env.NEXT_PUBLIC_APP_URL) {
+            console.error('NEXT_PUBLIC_APP_URL is not defined');
+            redirect('/error');
+        }
 
-    console.log(origin, "originnnn")
-    console.log(data, 'data')
+        const { data, error } = await supabase.auth.signInWithOAuth({
+            provider: type as Provider,
+            options: {
+                redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth-callback/callback`,
+            },
+        });
 
+        if (error) {
+            console.error('Error signing in with OAuth:', error);
+            redirect('/error');
+        }
 
-    if (error) {
-        redirect("/error")
-    }
-    else if (data?.url) {
-        return redirect(data.url)
+        if (!data?.url) {
+            console.error('No redirect URL received from OAuth provider');
+            redirect('/error');
+        }
+
+        return redirect(data.url);
+    } catch (error) {
+        console.error('Unexpected error in signInWithOAuth:', error);
+        redirect('/error');
     }
 }
 
