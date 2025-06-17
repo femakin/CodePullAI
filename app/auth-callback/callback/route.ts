@@ -8,14 +8,21 @@ export async function GET(request: Request) {
 
     const code = searchParams.get('code')
     const next = searchParams.get('next') ?? '/'
-
+console.log(code, "code  ccc")
     if (code) {
         const supabase = await createClient()
         const { error, data } = await supabase.auth.exchangeCodeForSession(code)
+        
+        console.log(error, "error error error")
+        console.log(data, "data data data")
 
         if (!error) {
             // Add new user to database
             const { data: userData, error: userError } = await supabase.auth.getUser()
+
+            console.log(userData, "userData")
+
+            console.log(userError, "userError")
 
             if (userError) {
                 console.log("Error fetching user data", userError?.message)
