@@ -40,6 +40,10 @@ export async function signInWithOAuth(type: string) {
         redirect("/error")
     }
     else if (data?.url) {
+
+        console.log(data, "data.url")
+
+
         return redirect(data.url)
     }
 }
