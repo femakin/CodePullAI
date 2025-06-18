@@ -14,6 +14,7 @@ console.log(code, "code  ccc")
         const { error, data } = await supabase.auth.exchangeCodeForSession(code)
         
         console.log(error, "error error error")
+        
         console.log(data, "data data data")
 
         if (!error) {
