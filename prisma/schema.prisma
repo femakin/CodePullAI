@@ -16,6 +16,6 @@ model users {
   imageUrl   String?
   email      String   @unique
   authId     String   @unique
-
+  installationId String?
   @@id([id, email])
 }

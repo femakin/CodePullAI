@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Bot, Github, GitBranch, Settings, Activity, CheckCircle, Clock, AlertTriangle, User } from "lucide-react"
 import { useRouter } from "next/navigation"
 import RespositoryCard from "@/components/RespositoryCard"
+import Link from "next/link"
 
 interface Repository {
   id: number
@@ -42,18 +43,18 @@ export default function Dashboard() {
   useEffect(() => {
     // Check if user is authenticated
 
-    fetch("/api/repositories")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.error) {
-          console.log(data.error, "error")
-        } else {
-          setRepositories(data)
-        }
-      })
-      .catch((err) => {
-        console.log(err, "err")
-      })
+    // fetch("/api/repositories")
+    //   .then((res) => res.json())
+    //   .then((data) => {
+    //     if (data.error) {
+    //       console.log(data.error, "error")
+    //     } else {
+    //       setRepositories(data)
+    //     }
+    //   })
+    //   .catch((err) => {
+    //     console.log(err, "err")
+    //   })
 
 
 
@@ -143,11 +144,22 @@ export default function Dashboard() {
                 <CardDescription>Enable AI code reviews for your repositories by toggling the webhook.</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
+                {/* <div className="space-y-4">
                   {repositories?.map((repo) => (
                     <RespositoryCard key={repo.id} repo={repo} toggleWebhook={toggleWebhook} />  
                   ))}
-                </div>
+                </div> */}
+
+<Link
+  href="https://github.com/apps/codepullai/installations/new"
+  target="_blank"
+  rel="noopener noreferrer"
+>
+  <Button size="lg" className="w-full">
+    Install GitHub App
+  </Button>
+</Link>
+
               </CardContent>
             </Card>
 

@@ -12,6 +12,8 @@ export async function GET(request: NextRequest) {
 
   const github_token = session?.provider_token
 
+  console.log(github_token, "github_token")
+
   if (data.user?.aud !== "authenticated") {
     return NextResponse.json({ error: "Unauthenticated user" }, { status: 401 })
   }
@@ -35,6 +37,7 @@ export async function GET(request: NextRequest) {
 
     const repos = await response.json()
 
+    // console.log( repos.find((repo: any) => (repo.name === "accomodate_with_xata")), "repos")
     // Transform the data to match our interface
     const transformedRepos = repos.map((repo: any) => ({
       id: repo.id,
@@ -59,6 +62,9 @@ export async function POST(request: NextRequest) {
   const { data } = await supabase.auth.getUser()
   const { data: { session } } = await supabase.auth.getSession()
   const github_token = session?.provider_token
+
+  console.log(github_token, "github_token")
+
 
   if (data.user?.aud !== "authenticated") {
     return NextResponse.json({ error: "Unauthenticated user" }, { status: 401 })
@@ -110,7 +116,7 @@ export async function POST(request: NextRequest) {
           url: webhookUrl,
           content_type: 'json',
           insecure_ssl: '0',
-          secret: process.env.WEBHOOK_SECRET
+          secret: process.env.GITHUB_WEBHOOK_SECRET
         },
         headers: {
           'X-GitHub-Api-Version': '2022-11-28'
@@ -131,7 +137,7 @@ export async function POST(request: NextRequest) {
         //   config: {
         //     url: `${process.env.NEXT_PUBLIC_APP_URL}/api/webhook/github`,
         //     content_type: "json",
-        //     secret: process.env.WEBHOOK_SECRET,
+        //     secret: process.env.GITHUB_WEBHOOK_SECRET,
         //   },
         // }),
       // })
