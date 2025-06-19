@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
           url: webhookUrl,
           content_type: 'json',
           insecure_ssl: '0',
-          secret: process.env.WEBHOOK_SECRET
+          secret: process.env.GITHUB_WEBHOOK_SECRET
         },
         headers: {
           'X-GitHub-Api-Version': '2022-11-28'
@@ -137,7 +137,7 @@ export async function POST(request: NextRequest) {
         //   config: {
         //     url: `${process.env.NEXT_PUBLIC_APP_URL}/api/webhook/github`,
         //     content_type: "json",
-        //     secret: process.env.WEBHOOK_SECRET,
+        //     secret: process.env.GITHUB_WEBHOOK_SECRET,
         //   },
         // }),
       // })
