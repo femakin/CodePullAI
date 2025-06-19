@@ -6,22 +6,23 @@ import { prisma } from "@/lib/prisma";
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
 
-    const code = searchParams.get('code')
-    const next = searchParams.get('next') ?? '/'
-    if (code) {
+    const installation_id = searchParams.get('installation_id')
+    const setup_action = searchParams.get('setup_action') ?? '/'
+    if (installation_id && setup_action === 'install') {
         const supabase = await createClient()
         const { error, data } = await supabase.auth.exchangeCodeForSession(code)
         
-        // console.log(error, "error error error")
-    
+        console.log(error, "error error error")
+        
+        console.log(data, "data data data")
 
         if (!error) {
             // Add new user to database
             const { data: userData, error: userError } = await supabase.auth.getUser()
 
-            // console.log(userData, "userData")
+            console.log(userData, "userData")
 
-            // console.log(userError, "userError")
+            console.log(userError, "userError")
 
             if (userError) {
                 console.log("Error fetching user data", userError?.message)
