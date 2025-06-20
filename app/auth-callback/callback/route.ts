@@ -8,12 +8,13 @@ export async function GET(request: Request) {
 
     const code = searchParams.get('code')
     const next = searchParams.get('next') ?? '/'
+    console.log(code, "code  ccc")
     if (code) {
         const supabase = await createClient()
         const { error, data } = await supabase.auth.exchangeCodeForSession(code)
-        
+
         // console.log(error, "error error error")
-    
+        // console.log(data, "data data data")
 
         if (!error) {
             // Add new user to database
