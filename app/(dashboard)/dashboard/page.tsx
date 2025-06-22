@@ -57,6 +57,22 @@ export default function Dashboard() {
     //   })
 
 
+      fetch("/api/repositories/installed")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.error) {
+          console.log(data.error, "error")
+        } else {
+          // setRepositories(data)
+
+          console.log(data, "data")
+        }
+      })
+      .catch((err) => {
+        console.log(err, "err")
+      })
+
+
 
     // Mock data for recent activities
     setActivities([

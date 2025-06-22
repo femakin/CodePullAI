@@ -12,7 +12,6 @@ export async function POST(request: NextRequest) {
   const rawBody = await request.text()
   const secret = process.env.GITHUB_WEBHOOK_SECRET!
 
-  console.log(secret, "secret")
 
   const hmac = crypto.createHmac("sha256", secret)
   const digest = "sha256=" + hmac.update(rawBody).digest("hex")
