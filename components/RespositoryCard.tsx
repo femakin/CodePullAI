@@ -3,30 +3,14 @@ import { Badge } from './ui/badge'
 import { Switch } from './ui/switch'
 import { CheckCircle } from 'lucide-react'
 
-const RespositoryCard = ({repo, toggleWebhook} : {repo : any, toggleWebhook : (repoId : number) => void}) => {
+const RespositoryCard = ({repo, toggleWebhook, installationID} : {repo : any, toggleWebhook : (repoId : number) => void, installationID : string}) => {
 
-    const onToggleWebhook = async (repoId : number, repoName : string, repoOwner : string) => {
 
-        fetch("/api/repositories", {
-            method: "POST",
-            body: JSON.stringify({
-                repoId,
-                repoName,
-                repoOwner,
-                action: "enable_webhook"
-            })
-        })
-        .then((res) => res.json())
-        .then((data) => {
-          console.log(data, "data")
-        })
-        .catch((err) => {
-          console.log(err, "err")
-        })
-  
-        toggleWebhook(repoId)
-        console.log(repoId, "repoId")
+    const onToggleWebhook = async ( repoId: number, repoName: string, repoOwner: string ) => {
+      
+        window.open(`https://github.com/settings/installations/${installationID}`, '_blank', 'noopener,noreferrer');
     }
+
   return (
     <div className="flex items-center justify-between p-4 border rounded-lg">
     <div className="flex-1">

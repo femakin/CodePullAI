@@ -1,13 +1,12 @@
 import { NextResponse } from "next/server"
 import { createClient } from '@/utils/supabase/server'
 import { prisma } from "@/lib/prisma"
-import { getInstallationToken } from "@/lib/githubApp"
+import { getInstallationToken, getGitHubInstallationAccessToken } from "@/lib/githubApp"
 import { Octokit } from "octokit"
 
 export async function GET() {
   const supabase = await createClient()
 
-  // 1. Get the current user from Supabase Auth
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
@@ -15,7 +14,6 @@ export async function GET() {
   }
 
   try {
-    // 2. Get the user's installation ID from your database
     const dbUser = await prisma.users.findUnique({
       where: { authId: user.id },
     })
@@ -24,18 +22,13 @@ export async function GET() {
       return NextResponse.json({ error: "GitHub App installation not found for this user." }, { status: 404 })
     }
 
-    // 3. Generate an installation access token
-    const installationId = parseInt(dbUser.installationId)
+    const installationId = dbUser.installationId
 
-    console.log(installationId, "installationId"
-      
-    )
-
-    const installationToken = await getInstallationToken(installationId)
-
+    const installationToken = await getInstallationToken(parseInt(installationId))
   
-    // 4. Use the installation token to call the GitHub API
-    const octokit = new Octokit({ auth: installationToken })
+    const githubTken =  await getGitHubInstallationAccessToken(installationId, installationToken)
+
+    const octokit = new Octokit({ auth: githubTken.token })
 
     const { data: response } = await octokit.request('GET /installation/repositories', {
       headers: {
