@@ -7,9 +7,15 @@ import { getInstallationToken } from "@/lib/githubApp"
 // This would be your webhook endpoint that GitHub calls
 export async function POST(request: NextRequest) {
   // --- Webhook signature verification ---
+
+  console.log("am here ")
+
   const signature = request.headers.get("x-hub-signature-256")
   const rawBody = await request.text()
   const secret = process.env.GITHUB_WEBHOOK_SECRET!
+
+  console.log(secret, "secret")
+
   const hmac = crypto.createHmac("sha256", secret)
   const digest = "sha256=" + hmac.update(rawBody).digest("hex")
   if (!signature || !crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(digest))) {
