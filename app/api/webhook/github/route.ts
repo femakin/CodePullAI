@@ -1,5 +1,3 @@
-"use client"
-
 import { type NextRequest, NextResponse } from "next/server"
 import crypto from "crypto"
 import { getInstallationToken } from "@/lib/githubApp"
