@@ -9,6 +9,10 @@ export async function GET(request: NextRequest) {
   const installationId = url.searchParams.get("installation_id");
   // Store installationId in your DB, associated with the user
 
+  if(!installationId){
+    return NextResponse.redirect(new URL("/dashboard", request.url));
+  }
+
   try {
 
     const { data: userData, error: userError } = await supabase.auth.getUser()
@@ -22,10 +26,15 @@ export async function GET(request: NextRequest) {
     const existingUser = await prisma.users.findUnique({
         where: { email: userData.user.email },
     });
+
+    console.log(existingUser, "existingUser")
+    console.log(installationId, "installationId")
+
+
     if(existingUser){
         await prisma.users.update({
-            where: { id: existingUser.id },
-            data: { installationId },
+            where: { email: userData.user.email },
+            data: { installationId : installationId },
         });
         console.log(`User updated in database: ${existingUser.id}`);
     }
@@ -49,5 +58,5 @@ catch (error) {
 }
 
   // Redirect to dashboard or show success
-  return NextResponse.redirect("/dashboard");
+  return NextResponse.redirect(new URL("/dashboard", request.url));
 }
