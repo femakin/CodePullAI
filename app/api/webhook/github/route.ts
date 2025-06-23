@@ -21,8 +21,6 @@ export async function POST(request: NextRequest) {
   const payload = JSON.parse(rawBody)
   const event = request.headers.get("x-github-event")
 
-  console.log("GitHub webhook received:", event, payload)
-
   // Handle pull request events
   if (event === "pull_request") {
     const action = payload.action
@@ -70,8 +68,12 @@ async function processCodeReview(prData: {
 
     const diff = await diffResponse.text()
 
+    console.log(diff, "diff")
+
     // 2. Parse the diff and extract code changes
     const codeChanges = parseDiff(diff)
+
+    console.log(codeChanges, "codeChanges")
 
     // 3. Send to AI for review
     const reviews = await getAIReview(codeChanges, prData.prTitle)
@@ -82,9 +84,13 @@ async function processCodeReview(prData: {
       return console.log(`No AI review generated for PR #${prData.prNumber} in ${prData.repo}`)
     }
     // 4. Post comments back to GitHub
-    for (const review of reviews) {
-      await postGitHubComment(prData.commentsUrl, review, githubTken.token)
-    }
+
+    await postGitHubComment(prData.commentsUrl, reviews[0], githubTken.token)
+
+
+    // for (const review of reviews) {
+    //   await postGitHubComment(prData.commentsUrl, review, githubTken.token)
+    // }
     console.log(`AI review completed for PR #${prData.prNumber} in ${prData.repo}`)
 
   } catch (error) {
