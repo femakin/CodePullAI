@@ -66,6 +66,8 @@ Respond with a JSON array of review comments, each with:
 export async function postGitHubComment(commentsUrl: string, review: any, token: string) {
 
   console.log(review, "review")
+
+  
   console.log(review.file, "review file")
 
   try {
@@ -97,12 +99,15 @@ export async function processReview(files: any[], prTitle: string, commentsUrl: 
 
 
   const aiReview = await getAIReview(files, prTitle);
+  let aiReviewString = aiReview.trim();
+  if (aiReviewString.startsWith('```')) {
+    aiReviewString = aiReviewString.replace(/^```(?:json)?/, '').replace(/```$/, '').trim();
+  }
   let reviewComments = [];
   try {
-    reviewComments = JSON.parse(aiReview);
+    reviewComments = JSON.parse(aiReviewString);
   } catch (e) {
-    console.error("Failed to parse AI review as JSON:", aiReview);
-    // Optionally, post a fallback comment or skip
+    console.error("Failed to parse AI review as JSON:", aiReviewString);
     return;
   }
 
