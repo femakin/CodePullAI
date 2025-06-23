@@ -35,29 +35,33 @@ interface ReviewActivity {
 // A new component for the empty state
 function InstallAppCard() {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Connect Your Repositories</CardTitle>
-        <CardDescription>
-          Install our GitHub App to begin analyzing your code. You'll be able to select which repositories you want us to access.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Link
-          href={`https://github.com/apps/codepullai/installations/new`}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Button size="lg" className="w-full">
-            <Github className="h-5 w-5 mr-2" />
-            Install GitHub App
-          </Button>
-        </Link>
-        <p className="text-xs text-slate-500 mt-4 text-center">
-          You will be redirected to GitHub to complete the installation.
-        </p>
-      </CardContent>
-    </Card>
+    <div className="flex flex-col items-center justify-center min-h-[60vh]">
+      <Card className="w-full max-w-md shadow-xl border-2 border-dashed border-blue-200 bg-gradient-to-br from-blue-50 to-white">
+        <CardHeader className="flex flex-col items-center">
+          <Github className="h-16 w-16 text-blue-500 mb-4" />
+          <CardTitle className="text-2xl font-bold text-center mb-2">Connect Your GitHub Repositories</CardTitle>
+          <CardDescription className="text-center text-lg text-slate-600 mb-2">
+            To get started, install our GitHub App and select the repositories you want to enable for AI code review.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col items-center">
+          <Link
+            href={`https://github.com/apps/codepullai/installations/new`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Button size="lg" className="w-full py-6 px-8 text-lg font-semibold bg-gray-900 hover:bg-gray-800 text-white rounded-xl shadow-md transition-all duration-200">
+              <Github className="h-6 w-6 mr-3" />
+              Install GitHub App
+            </Button>
+          </Link>
+          <p className="text-xs text-slate-500 mt-6 text-center">
+            You will be redirected to GitHub to complete the installation.<br/>
+            After installation, return here to see your connected repositories.
+          </p>
+        </CardContent>
+      </Card>
+    </div>
   )
 }
 
@@ -77,7 +81,7 @@ export default function Dashboard() {
         // Fetch repositories
         const reposResponse = await fetch("/api/repositories/installed")
         if (!reposResponse.ok) {
-          throw new Error('Failed to fetch repositories')
+          setRepositories([])
         }
         const reposData = await reposResponse.json()
         if (reposData.data) {
@@ -87,7 +91,7 @@ export default function Dashboard() {
         // Fetch user data
         const userResponse = await fetch("/api/user")
         if (!userResponse.ok) {
-          throw new Error('Failed to fetch user data')
+          setUserData(null)
         }
         const userData = await userResponse.json()
         if (userData.data) {
