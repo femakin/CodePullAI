@@ -22,6 +22,10 @@ export function parseDiff(diff: string) {
 
 // Helper: Call OpenAI GPT-4 for code review
 export async function getAIReview(files: any[], prTitle: string) {
+
+  console.log(files[0], "files")
+
+
   const prompt = `
   You are an expert code reviewer. Analyze the following code changes from a pull request titled "${prTitle}".
 
@@ -58,6 +62,11 @@ Respond with a JSON array of review comments, each with:
     })
   });
   const data = await response.json();
+  
+  console.log(data.choices, "data.choices ")
+  
+  console.log(data.choices?.[0]?.message?.content, "data.choices?.[0]?.message?.content ")
+
   return data.choices?.[0]?.message?.content || "No review generated.";
 }
 
