@@ -22,9 +22,6 @@ export function parseDiff(diff: string) {
 // Helper: Call OpenAI GPT-4 for code review
 export async function getAIReview(files: any[], prTitle: string) {
 
-  console.log(files[0], "files")
-
-
   const prompt = `
   You are an expert code reviewer. Analyze the following code changes from a pull request titled "${prTitle}".
 
@@ -62,15 +59,15 @@ Respond with a JSON array of review comments, each with:
   });
   const data = await response.json();
   
-  console.log(data.choices, "data.choices ")
-  
-  console.log(data.choices?.[0]?.message?.content, "data.choices?.[0]?.message?.content ")
-
   return data.choices?.[0]?.message?.content || "No review generated.";
 }
 
 
 export async function postGitHubComment(commentsUrl: string, review: any, token: string) {
+
+  console.log(review, "review")
+  console.log(review.file, "review file")
+
   try {
     const response = await fetch(commentsUrl, {
       method: "POST",
@@ -95,6 +92,10 @@ export async function postGitHubComment(commentsUrl: string, review: any, token:
 }
 
 export async function processReview(files: any[], prTitle: string, commentsUrl: string, token: string) {
+
+  console.log(prTitle, "prTitle")
+
+
   const aiReview = await getAIReview(files, prTitle);
   let reviewComments = [];
   try {
@@ -104,6 +105,9 @@ export async function processReview(files: any[], prTitle: string, commentsUrl: 
     // Optionally, post a fallback comment or skip
     return;
   }
+
+  console.log(reviewComments, "reviewComments")
+
   for (const review of reviewComments) {
     await postGitHubComment(commentsUrl, review, token);
   }

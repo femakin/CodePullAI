@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import crypto from "crypto"
 import { getGitHubInstallationAccessToken, getInstallationToken } from "@/lib/githubApp"
-import { getAIReview, parseDiff, postGitHubComment } from "@/actions/github/handle-webhook"
+import { parseDiff, processReview } from "@/actions/github/handle-webhook"
 
 // This would be your webhook endpoint that GitHub calls
 export async function POST(request: NextRequest) {
@@ -72,16 +72,20 @@ async function processCodeReview(prData: {
     const codeChanges = parseDiff(diff)
 
     // 3. Send to AI for review
-    const reviews = await getAIReview(codeChanges, prData.prTitle)
+    await processReview(codeChanges, prData.prTitle, prData.commentsUrl, githubTken.token)
 
-    console.log(reviews, "reviews")
+    // console.log(reviews, "reviews")
 
-    if(reviews === "No review generated."){
-      return console.log(`No AI review generated for PR #${prData.prNumber} in ${prData.repo}`)
-    }
-    // 4. Post comments back to GitHub
+    // if(reviews.length === 0 ){
+    //   return console.log(`No AI review generated for PR #${prData.prNumber} in ${prData.repo}`)
+    // }
 
-    await postGitHubComment(prData.commentsUrl, reviews[0], githubTken.token)
+    // if(reviews === "No review generated."){
+    //   return console.log(`No AI review generated for PR #${prData.prNumber} in ${prData.repo}`)
+    // }
+    // // 4. Post comments back to GitHub
+
+    // await processReview(prData.commentsUrl, reviews[0], githubTken.token)
 
 
     // for (const review of reviews) {
