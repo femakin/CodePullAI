@@ -35,7 +35,7 @@ Provide specific, actionable feedback focusing on:
 Code changes:
 ${files.map(f => `File: ${f.filename}\n` + f.changes.map((c: {type: string, content: string}) => `${c.type === "added" ? "+" : "-"} ${c.content}`).join("\n")).join("\n\n")}
 
-Respond with a JSON array of review comments, each with:
+Return ONLY a JSON array of object with a 'file', 'line', 'comment', and 'severity' fields containing an array of strings
 - file: filename
 - line: line content
 - comment: your review comment
@@ -49,7 +49,7 @@ Respond with a JSON array of review comments, each with:
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      model: "gpt-4",
+      model: "gpt-4o-mini",
       messages: [
         { role: "system", content: "You are an expert code reviewer." },
         { role: "user", content: prompt }
@@ -58,17 +58,29 @@ Respond with a JSON array of review comments, each with:
     })
   });
   const data = await response.json();
+
+  let result = [];
+
+  try{
+  const responseData = data.choices?.[0]?.message?.content
+
+  const jsonMatch = responseData.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+
+  if (jsonMatch && jsonMatch[1]) {
+    result = JSON.parse(jsonMatch[1]) || [];
+  } else {
+    result = JSON.parse(responseData) || [];
+  }
+  return result;
+}
+ catch (error) {
+  return console.log("Failed to parse topics:", error);
+}
   
-  return data.choices?.[0]?.message?.content || "No review generated.";
 }
 
 
 export async function postGitHubComment(commentsUrl: string, review: any, token: string) {
-
-  console.log(review, "review")
-
-  
-  console.log(review.file, "review file")
 
   try {
     const response = await fetch(commentsUrl, {
@@ -86,8 +98,6 @@ export async function postGitHubComment(commentsUrl: string, review: any, token:
     if (!response.ok) {
       throw new Error(`GitHub API error: ${response.statusText}`);
     }
-
-    console.log("Comment posted successfully");
   } catch (error) {
     console.error("Error posting GitHub comment:", error);
   }
@@ -97,23 +107,27 @@ export async function processReview(files: any[], prTitle: string, commentsUrl: 
 
   console.log(prTitle, "prTitle")
 
-
   const aiReview = await getAIReview(files, prTitle);
-  let aiReviewString = aiReview.trim();
-  if (aiReviewString.startsWith('```')) {
-    aiReviewString = aiReviewString.replace(/^```(?:json)?/, '').replace(/```$/, '').trim();
-  }
-  let reviewComments = [];
-  try {
-    reviewComments = JSON.parse(aiReviewString);
-  } catch (e) {
-    console.error("Failed to parse AI review as JSON:", aiReviewString);
-    return;
-  }
 
-  console.log(reviewComments, "reviewComments")
 
-  for (const review of reviewComments) {
-    await postGitHubComment(commentsUrl, review, token);
-  }
+  console.log(aiReview, "ai Review  ")
+
+  console.log(aiReview[0], "ai Review aiReview[0]  ")
+
+  console.log(aiReview[0].line, "ai Review aiReview[0]  ")
+
+  // let reviewComments = [];
+  // try {
+  //   reviewComments = JSON.parse(aiReview);
+  // } catch (e) {
+  //   console.error("Failed to parse AI review as JSON:", aiReview);
+  //   // Optionally, post a fallback comment or skip
+  //   return;
+  // }
+
+  // console.log(reviewComments, "reviewComments")
+
+  // for (const review of reviewComments) {
+  //   await postGitHubComment(commentsUrl, review, token);
+  // }
 }
