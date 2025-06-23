@@ -3,7 +3,6 @@ import { createClient } from '@/utils/supabase/server'
 import { prisma } from "@/lib/prisma"
 import { getInstallationToken, getGitHubInstallationAccessToken } from "@/lib/githubApp"
 import { Octokit } from "octokit"
-import { getAIReview, parseDiff } from "@/actions/github/handle-webhook"
 
 export async function GET() {
   const supabase = await createClient()
