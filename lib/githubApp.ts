@@ -10,7 +10,6 @@ export async function getInstallationToken(installationId: number): Promise<stri
     throw new Error("FATAL: GITHUB_APP_ID environment variable is not set.");
   }
 
-  console.log(privateKey, "privateKey privateKey")
   if (!privateKey) {
     throw new Error("FATAL: GITHUB_APP_PRIVATE_KEY environment variable is not set. Check your .env.local file or deployment settings.");
   }
