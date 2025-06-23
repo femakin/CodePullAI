@@ -31,41 +31,6 @@ export async function GET() {
 
     const octokit = new Octokit({ auth: githubTken.token })
 
-
-
-
-    fetch("https://github.com/jaymeeu/accomodate_with_xata/pull/2.diff",{
-      headers: {
-        Authorization: `Bearer ${githubTken.token}`,
-        Accept: "application/vnd.github.v3.diff",
-      },
-    })
-    .then(response => {
-      if (!response.ok) {
-        console.error('Error:', response);
-      }
-      return response.text();
-    })
-    .then(async(diff) => {
-      console.log(diff);
-
-      const files = parseDiff(diff);
-      // 3. Send code to AI for review
-      const aiReview = await getAIReview(files, "to main");
-      // For now, just log the AI review
-      console.log("AI Review:", aiReview);
-
-    })
-    .catch(error => {
-      console.error('Error:', error);
-
-    })
-
-
-    
-
-
-
     const { data: response } = await octokit.request('GET /installation/repositories', {
       headers: {
         'X-GitHub-Api-Version': '2022-11-28'
