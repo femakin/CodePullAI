@@ -74,23 +74,6 @@ async function processCodeReview(prData: {
     // 3. Send to AI for review
     await processReview(codeChanges, prData.prTitle, prData.commentsUrl, githubTken.token)
 
-    // console.log(reviews, "reviews")
-
-    // if(reviews.length === 0 ){
-    //   return console.log(`No AI review generated for PR #${prData.prNumber} in ${prData.repo}`)
-    // }
-
-    // if(reviews === "No review generated."){
-    //   return console.log(`No AI review generated for PR #${prData.prNumber} in ${prData.repo}`)
-    // }
-    // // 4. Post comments back to GitHub
-
-    // await processReview(prData.commentsUrl, reviews[0], githubTken.token)
-
-
-    // for (const review of reviews) {
-    //   await postGitHubComment(prData.commentsUrl, review, githubTken.token)
-    // }
     console.log(`AI review completed for PR #${prData.prNumber} in ${prData.repo}`)
 
   } catch (error) {
