@@ -1,4 +1,3 @@
-
 // Helper: Parse a unified diff into file changes (MVP, not robust)
 export function parseDiff(diff: string) {
   const files: any[] = [];
@@ -92,5 +91,20 @@ export async function postGitHubComment(commentsUrl: string, review: any, token:
     console.log("Comment posted successfully");
   } catch (error) {
     console.error("Error posting GitHub comment:", error);
+  }
+}
+
+export async function processReview(files: any[], prTitle: string, commentsUrl: string, token: string) {
+  const aiReview = await getAIReview(files, prTitle);
+  let reviewComments = [];
+  try {
+    reviewComments = JSON.parse(aiReview);
+  } catch (e) {
+    console.error("Failed to parse AI review as JSON:", aiReview);
+    // Optionally, post a fallback comment or skip
+    return;
+  }
+  for (const review of reviewComments) {
+    await postGitHubComment(commentsUrl, review, token);
   }
 }
