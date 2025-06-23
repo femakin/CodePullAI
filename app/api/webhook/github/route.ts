@@ -71,10 +71,6 @@ async function processCodeReview(prData: {
     // 2. Parse the diff and extract code changes
     const codeChanges = parseDiff(diff)
 
-    console.log(codeChanges[1].filename, "filename codeChanges")
-    
-    console.log(codeChanges[1].changes[0], "1].changes[0] codeChanges")
-
     // 3. Send to AI for review
     const reviews = await getAIReview(codeChanges, prData.prTitle)
 

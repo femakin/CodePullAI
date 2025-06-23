@@ -29,6 +29,7 @@ export async function GET() {
   
     const githubTken =  await getGitHubInstallationAccessToken(installationId, installationToken)
 
+    // console.log(githubTken, "githubTken")
     const octokit = new Octokit({ auth: githubTken.token })
 
     const { data: response } = await octokit.request('GET /installation/repositories', {
