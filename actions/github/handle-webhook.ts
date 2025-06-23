@@ -64,14 +64,18 @@ Return ONLY a JSON array of object with a 'file', 'line', 'comment', and 'severi
   try{
   const responseData = data.choices?.[0]?.message?.content
 
-  const jsonMatch = responseData.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+  console.log(responseData, "responseData responseData")
 
-  if (jsonMatch && jsonMatch[1]) {
-    result = JSON.parse(jsonMatch[1]) || [];
-  } else {
-    result = JSON.parse(responseData) || [];
-  }
-  return result;
+  // const jsonMatch = responseData.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+
+  // if (jsonMatch && jsonMatch[1]) {
+  //   result = JSON.parse(jsonMatch[1]) || [];
+  // } else {
+  //   result = JSON.parse(responseData) || [];
+  // }
+  // return result;
+
+  return JSON.parse(responseData) || [];
 }
  catch (error) {
   return console.log("Failed to parse topics:", error);
