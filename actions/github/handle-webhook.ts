@@ -60,22 +60,21 @@ Return ONLY a JSON array of object with a 'file', 'line', 'comment', and 'severi
   const data = await response.json();
 
   let result = [];
+  try {
+    let responseData = data.choices?.[0]?.message?.content || "";
+  
+    responseData = responseData.trim();
 
-  try{
-  const responseData = data.choices?.[0]?.message?.content
+    if (responseData.startsWith("```")) {
+      responseData = responseData.replace(/^```(?:json)?/, "").replace(/```$/, "").trim();
+    }
+  
+    result = JSON.parse(responseData) || [];
 
-  console.log(responseData, "responseData responseData")
+    console.log(result, "result")
 
-  // const jsonMatch = responseData.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
 
-  // if (jsonMatch && jsonMatch[1]) {
-  //   result = JSON.parse(jsonMatch[1]) || [];
-  // } else {
-  //   result = JSON.parse(responseData) || [];
-  // }
-  // return result;
-
-  return JSON.parse(responseData) || [];
+    return result;
 }
  catch (error) {
   return console.log("Failed to parse topics:", error);
