@@ -4,10 +4,9 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Switch } from "@/components/ui/switch"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Bot, Github, GitBranch, Settings, Activity, CheckCircle, Clock, AlertTriangle, User } from "lucide-react"
+import { Bot, Github, GitBranch, Activity, CheckCircle, Clock, AlertTriangle, User, PlusCircle, ExternalLink } from "lucide-react"
 import { useRouter } from "next/navigation"
 import RespositoryCard from "@/components/RespositoryCard"
 import Link from "next/link"
@@ -33,63 +32,80 @@ interface ReviewActivity {
   timestamp: string
 }
 
+// A new component for the empty state
+function InstallAppCard() {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[60vh]">
+      <Card className="w-full max-w-md shadow-xl border-2 border-dashed border-blue-200 bg-gradient-to-br from-blue-50 to-white">
+        <CardHeader className="flex flex-col items-center">
+          <Github className="h-16 w-16 text-blue-500 mb-4" />
+          <CardTitle className="text-2xl font-bold text-center mb-2">Connect Your GitHub Repositories</CardTitle>
+          <CardDescription className="text-center text-lg text-slate-600 mb-2">
+            To get started, install our GitHub App and select the repositories you want to enable for AI code review.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col items-center">
+          <Link
+            href={`https://github.com/apps/codepullai/installations/new`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Button size="lg" className="w-full py-6 px-8 text-lg font-semibold bg-gray-900 hover:bg-gray-800 text-white rounded-xl shadow-md transition-all duration-200">
+              <Github className="h-6 w-6 mr-3" />
+              Install GitHub App
+            </Button>
+          </Link>
+          <p className="text-xs text-slate-500 mt-6 text-center">
+            You will be redirected to GitHub to complete the installation.<br/>
+            After installation, return here to see your connected repositories.
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
 export default function Dashboard() {
-  const [user, setUser] = useState<any>(null)
   const [repositories, setRepositories] = useState<Repository[]>([])
   const [activities, setActivities] = useState<ReviewActivity[]>([])
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
+  const [userData, setUserData] = useState<any>(null)
+  
   useEffect(() => {
-    // Check if user is authenticated
+    const fetchData = async () => {
+      setLoading(true)
+      
+      try {
+        // Fetch repositories
+        const reposResponse = await fetch("/api/repositories/installed")
+        if (!reposResponse.ok) {
+          setRepositories([])
+        }
+        const reposData = await reposResponse.json()
+        if (reposData.data) {
+          setRepositories(reposData.data)
+        }
 
-    // fetch("/api/repositories")
-    //   .then((res) => res.json())
-    //   .then((data) => {
-    //     if (data.error) {
-    //       console.log(data.error, "error")
-    //     } else {
-    //       setRepositories(data)
-    //     }
-    //   })
-    //   .catch((err) => {
-    //     console.log(err, "err")
-    //   })
+        // Fetch user data
+        const userResponse = await fetch("/api/user")
+        if (!userResponse.ok) {
+          setUserData(null)
+        }
+        const userData = await userResponse.json()
+        if (userData.data) {
+          setUserData(userData.data)
+        }
+      } catch (err) {
+        console.error("Error fetching data:", err)
+        setRepositories([]) // Clear repositories on error
+      } finally {
+        setLoading(false)
+      }
+    }
 
-
-
-    // Mock data for recent activities
-    setActivities([
-      {
-        id: "1",
-        repo: "my-web-app",
-        pr_number: 42,
-        pr_title: "Add user authentication",
-        status: "completed",
-        comments_count: 3,
-        timestamp: "2 hours ago",
-      },
-      {
-        id: "2",
-        repo: "api-server",
-        pr_number: 15,
-        pr_title: "Implement rate limiting",
-        status: "in_progress",
-        comments_count: 0,
-        timestamp: "5 hours ago",
-      },
-      {
-        id: "3",
-        repo: "my-web-app",
-        pr_number: 41,
-        pr_title: "Fix responsive design issues",
-        status: "completed",
-        comments_count: 5,
-        timestamp: "1 day ago",
-      },
-    ])
-
-    setLoading(false)
+    fetchData()
   }, [router])
 
   const toggleWebhook = async (repoId: number) => {
@@ -113,111 +129,115 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="container mx-auto px-4 py-8 flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       </div>
     )
   }
 
   return (
-    
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-8">
+        <h2 className="text-3xl font-bold text-slate-900 mb-2">Welcome back!</h2>
+        <p className="text-slate-600">Manage your repositories and review AI-powered code analysis.</p>
+      </div>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-slate-900 mb-2">Welcome back!</h2>
-          <p className="text-slate-600">Manage your repositories and review AI-powered code analysis.</p>
-        </div>
+      <Tabs defaultValue="repositories" className="space-y-6">
+        {/* <TabsList>
+          <TabsTrigger value="repositories">Repositories</TabsTrigger>
+          <TabsTrigger value="activity">Recent Activity</TabsTrigger>
+        </TabsList> */}
 
-        <Tabs defaultValue="repositories" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="repositories">Repositories</TabsTrigger>
-            <TabsTrigger value="activity">Recent Activity</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="repositories" className="space-y-6">
+        <TabsContent value="repositories" className="space-y-6">
+          {repositories.length > 0 ? (
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Github className="h-5 w-5" />
-                  <span>Connected Repositories</span>
-                </CardTitle>
-                <CardDescription>Enable AI code reviews for your repositories by toggling the webhook.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {/* <div className="space-y-4">
-                  {repositories?.map((repo) => (
-                    <RespositoryCard key={repo.id} repo={repo} toggleWebhook={toggleWebhook} />  
-                  ))}
-                </div> */}
-
-<Link
-  href="https://github.com/apps/codepullai/installations/new"
-  target="_blank"
-  rel="noopener noreferrer"
->
-  <Button size="lg" className="w-full">
-    Install GitHub App
-  </Button>
-</Link>
-
-              </CardContent>
-            </Card>
-
-            <Alert>
-              <Bot className="h-4 w-4" />
-              <AlertDescription>
-                When you enable AI reviews for a repository, CodeSage will automatically analyze all new pull requests
-                and provide intelligent feedback.
-              </AlertDescription>
-            </Alert>
-          </TabsContent>
-
-          <TabsContent value="activity" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Activity className="h-5 w-5" />
-                  <span>Recent Reviews</span>
-                </CardTitle>
-                <CardDescription>Latest AI code review activities across your repositories.</CardDescription>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Github className="h-5 w-5" />
+                    <span>Connected Repositories</span>
+                  </CardTitle>
+                  <CardDescription>
+                    AI code reviews are active for the repositories below.
+                  </CardDescription>
+                </div>
+                <Link
+                  href={userData?.installationId ? `https://github.com/settings/installations/${userData.installationId}` : "https://github.com/apps/codepullai/installations/new"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button variant="outline">
+                    <PlusCircle className="h-4 w-4 mr-2" />
+                    Add / Configure Repositories
+                  </Button>
+                </Link>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {activities.map((activity) => (
-                    <div key={activity.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-center space-x-4">
-                        {getStatusIcon(activity.status)}
-                        <div>
-                          <div className="flex items-center space-x-2 mb-1">
-                            <h3 className="font-semibold">#{activity.pr_number}</h3>
-                            <span className="text-sm text-slate-600">{activity.pr_title}</span>
-                          </div>
-                          <div className="flex items-center space-x-2 text-xs text-slate-500">
-                            <GitBranch className="h-3 w-3" />
-                            <span>{activity.repo}</span>
-                            <span>•</span>
-                            <span>{activity.timestamp}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center space-x-4">
-                        {activity.comments_count > 0 && (
-                          <Badge variant="outline" className="text-xs">
-                            {activity.comments_count} comments
-                          </Badge>
-                        )}
-                        <Button variant="outline" size="sm">
-                          View PR
-                        </Button>
-                      </div>
-                    </div>
+                  {repositories.map((repo) => (
+                    <RespositoryCard installationID={userData?.installationId} key={repo.id} repo={repo} toggleWebhook={toggleWebhook} />
                   ))}
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
+          ) : (
+            <InstallAppCard />
+          )}
+        </TabsContent>
+
+        <TabsContent value="activity" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Activity className="h-5 w-5" />
+                <span>Recent Reviews</span>
+              </CardTitle>
+              <CardDescription>Latest AI code review activities across your repositories.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {activities.map((activity) => (
+                  <div key={activity.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex items-center space-x-4">
+                      {getStatusIcon(activity.status)}
+                      <div>
+                        <div className="flex items-center space-x-2 mb-1">
+                          <h3 className="font-semibold">#{activity.pr_number}</h3>
+                          <span className="text-sm text-slate-600">{activity.pr_title}</span>
+                        </div>
+                        <div className="flex items-center space-x-2 text-xs text-slate-500">
+                          <GitBranch className="h-3 w-3" />
+                          <span>{activity.repo}</span>
+                          <span>•</span>
+                          <span>{activity.timestamp}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center space-x-4">
+                      {activity.comments_count > 0 && (
+                        <Badge variant="outline" className="text-xs">
+                          {activity.comments_count} comments
+                        </Badge>
+                      )}
+                      <Button variant="outline" size="sm">
+                        View PR
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      <Alert className="mt-6">
+        <Bot className="h-4 w-4" />
+        <AlertDescription>
+          When you add a repository, CodeSage will automatically analyze all new pull requests. You can manage repository access at any time via your GitHub settings.
+        </AlertDescription>
+      </Alert>
+    </div>
   )
 }

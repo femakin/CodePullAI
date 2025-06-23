@@ -1,32 +1,14 @@
 import React from 'react'
 import { Badge } from './ui/badge'
-import { Switch } from './ui/switch'
 import { CheckCircle } from 'lucide-react'
 
-const RespositoryCard = ({repo, toggleWebhook} : {repo : any, toggleWebhook : (repoId : number) => void}) => {
+const RespositoryCard = ({repo, toggleWebhook, installationID} : {repo : any, toggleWebhook : (repoId : number) => void, installationID : string}) => {
 
-    const onToggleWebhook = async (repoId : number, repoName : string, repoOwner : string) => {
+    // const onToggleWebhook = async ( repoId: number, repoName: string, repoOwner: string ) => {
+      
+    //     window.open(`https://github.com/settings/installations/${installationID}`, '_blank', 'noopener,noreferrer');
+    // }
 
-        fetch("/api/repositories", {
-            method: "POST",
-            body: JSON.stringify({
-                repoId,
-                repoName,
-                repoOwner,
-                action: "enable_webhook"
-            })
-        })
-        .then((res) => res.json())
-        .then((data) => {
-          console.log(data, "data")
-        })
-        .catch((err) => {
-          console.log(err, "err")
-        })
-  
-        toggleWebhook(repoId)
-        console.log(repoId, "repoId")
-    }
   return (
     <div className="flex items-center justify-between p-4 border rounded-lg">
     <div className="flex-1">
@@ -46,10 +28,23 @@ const RespositoryCard = ({repo, toggleWebhook} : {repo : any, toggleWebhook : (r
     </div>
 
     <div className="flex items-center space-x-4">
-      <div className="flex items-center space-x-2">
+      {/* <div className="flex items-center space-x-2">
         <span className="text-sm text-slate-600">AI Reviews</span>
         <Switch checked={repo.webhook_enabled} onCheckedChange={() => onToggleWebhook(repo.id, repo.name, repo.owner)} />
-      </div>
+      </div> */}
+
+      <button
+        className="text-xs text-red-600 border border-red-200 rounded px-2 py-1 hover:bg-red-50 transition"
+        onClick={() => {
+          if (window.confirm(`Are you sure you want to remove "${repo.name}" from CodeSage? This will disable AI reviews for this repository.`)) {
+            window.open(`https://github.com/settings/installations/${installationID}`, '_blank', 'noopener,noreferrer');
+          }
+        }}
+        title="Remove repository from CodeSage"
+      >
+        Remove
+      </button>
+
       {repo.webhook_enabled && (
         <Badge variant="default" className="text-xs">
           <CheckCircle className="h-3 w-3 mr-1" />
