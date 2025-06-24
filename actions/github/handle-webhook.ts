@@ -1,4 +1,10 @@
-// Helper: Parse a unified diff into file changes (MVP, not robust)
+interface ReviewComment {
+  file: string;
+  line: string;
+  comment: string;
+  severity: "low" | "medium" | "high";
+}
+
 export function parseDiff(diff: string) {
   const files: any[] = [];
   const fileBlocks = diff.split(/^diff --git /m).slice(1);
@@ -17,13 +23,6 @@ export function parseDiff(diff: string) {
     files.push({ filename, changes });
   }
   return files;
-}
-
-interface ReviewComment {
-  file: string;
-  line: string;
-  comment: string;
-  severity: "low" | "medium" | "high";
 }
 
 export async function getAIReview(files: any[], prTitle: string): Promise<ReviewComment[]> {
@@ -71,7 +70,7 @@ Example format:
           { role: "user", content: prompt }
         ],
         max_tokens: 1500, // Increased for better responses
-        temperature: 0.3 // Lower temperature for more consistent responses
+        temperature: 0.4 // Lower temperature for more consistent responses
       })
     });
 
@@ -95,6 +94,65 @@ Example format:
     return [];
   }
 }
+
+export async function getAIReviewWithRetry(files: any[], prTitle: string, maxRetries = 2): Promise<ReviewComment[]> {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const result = await getAIReview(files, prTitle);
+      if (result.length > 0) {
+        return result;
+      }
+
+      if (attempt < maxRetries) {
+        console.log(`Attempt ${attempt + 1} returned empty results, retrying...`);
+        // Wait before retry
+        await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+      }
+    } catch (error) {
+      console.error(`Attempt ${attempt + 1} failed:`, error);
+      if (attempt === maxRetries) {
+        return [];
+      }
+    }
+  }
+
+  return [];
+}
+
+export async function postGitHubComment(commentsUrl: string, review: any, token: string) {
+
+  try {
+    const response = await fetch(commentsUrl, {
+      method: "POST",
+      headers: {
+        Authorization: `token ${token}`,
+        Accept: "application/vnd.github.v3+json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        body: `🤖 **AI Code Review** (${review.severity} priority)\n\n**File:** \`${review.file}\`\n**Line:** \`${review.line}\`\n\n${review.comment}`,
+      }),
+    })
+
+    if (!response.ok) {
+      throw new Error(`GitHub API error: ${response.statusText}`);
+    }
+  } catch (error) {
+    console.error("Error posting GitHub comment:", error);
+  }
+}
+
+export async function processReview(files: any[], prTitle: string, commentsUrl: string, token: string) {
+
+  const aiReview = await getAIReviewWithRetry(files, prTitle);
+
+  for (const review of aiReview) {
+    await postGitHubComment(commentsUrl, review, token);
+  }
+}
+
+
+
 
 function parseAIResponse(content: string): ReviewComment[] {
   try {
@@ -165,8 +223,6 @@ function parseAIResponse(content: string): ReviewComment[] {
   // Ensure a return in all code paths
   return [];
 }
-  
-
 
 function fixCommonJsonIssues(content: string): string {
   return content
@@ -204,78 +260,4 @@ function isValidReviewComment(obj: any): obj is ReviewComment {
     typeof obj.comment === 'string' &&
     typeof obj.severity === 'string'
   );
-}
-
-// Alternative: More robust version with retry logic
-export async function getAIReviewWithRetry(files: any[], prTitle: string, maxRetries = 2): Promise<ReviewComment[]> {
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    try {
-      const result = await getAIReview(files, prTitle);
-      if (result.length > 0) {
-        return result;
-      }
-
-      if (attempt < maxRetries) {
-        console.log(`Attempt ${attempt + 1} returned empty results, retrying...`);
-        // Wait before retry
-        await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
-      }
-    } catch (error) {
-      console.error(`Attempt ${attempt + 1} failed:`, error);
-      if (attempt === maxRetries) {
-        return [];
-      }
-    }
-  }
-
-  return [];
-}
-
-
-export async function postGitHubComment(commentsUrl: string, review: any, token: string) {
-
-  try {
-    const response = await fetch(commentsUrl, {
-      method: "POST",
-      headers: {
-        Authorization: `token ${token}`,
-        Accept: "application/vnd.github.v3+json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        body: `🤖 **AI Code Review** (${review.severity} priority)\n\n**File:** \`${review.file}\`\n**Line:** \`${review.line}\`\n\n${review.comment}`,
-      }),
-    })
-
-    if (!response.ok) {
-      throw new Error(`GitHub API error: ${response.statusText}`);
-    }
-  } catch (error) {
-    console.error("Error posting GitHub comment:", error);
-  }
-}
-
-export async function processReview(files: any[], prTitle: string, commentsUrl: string, token: string) {
-
-
-  const aiReview = await getAIReview(files, prTitle);
-
-  console.log(aiReview[0], "ai Review aiReview[0]  ")
-
-  console.log(aiReview[0].line, "ai Review aiReview[0]  ")
-
-  // let reviewComments = [];
-  // try {
-  //   reviewComments = JSON.parse(aiReview);
-  // } catch (e) {
-  //   console.error("Failed to parse AI review as JSON:", aiReview);
-  //   // Optionally, post a fallback comment or skip
-  //   return;
-  // }
-
-  // console.log(reviewComments, "reviewComments")
-
-  // for (const review of reviewComments) {
-  //   await postGitHubComment(commentsUrl, review, token);
-  // }
 }
