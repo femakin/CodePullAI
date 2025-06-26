@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@aws-sdk/client-bedrock-runtime": "^3.835.0",
+    "@aws-sdk/client-dynamodb": "^3.835.0",
+    "@aws-sdk/lib-dynamodb": "^3.835.0",
     "@hookform/resolvers": "^3.9.1",
     "@octokit/app": "^16.0.1",
     "@octokit/request": "^10.0.2",

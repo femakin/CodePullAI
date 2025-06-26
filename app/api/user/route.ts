@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { createClient } from '@/utils/supabase/server'
-import { prisma } from "@/lib/prisma";
+import { DynamoDBService } from "@/lib/dynamodb";
 
 export async function GET() {
   const supabase = await createClient()
@@ -11,14 +11,14 @@ export async function GET() {
   }
 
   try {
-    const dbUser = await prisma.users.findUnique({
-      where: { authId: user.id },
-    });
+
+
+    const dbUser = await DynamoDBService.findUserByAuthId(user.id);
 
     if (!dbUser) {
       return NextResponse.json({ error: "User not found in database" }, { status: 404 });
     }
-    
+
     // Manually convert the BigInt 'id' field to a string before sending
     const userForJson = {
       ...dbUser,

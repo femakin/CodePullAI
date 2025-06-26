@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 // The client you created from the Server-Side Auth instructions
 import { createClient } from '@/utils/supabase/server'
-import { prisma } from "@/lib/prisma";
+import { DynamoDBService } from "@/lib/dynamodb";
 
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
@@ -31,21 +31,19 @@ export async function GET(request: Request) {
 
             try {
                 // Check if user already exists first
-                const existingUser = await prisma.users.findUnique({
-                    where: { email: userData.user.email },
-                });
+                if (userData.user.email) {
+                    const existingUser = await DynamoDBService.findUserByEmail(userData.user.email);
 
-                if (!existingUser && userData.user.email) {
-                    // Create user
-                    const user = await prisma.users.create({
-                        data: {
+                    if (!existingUser) {
+                        // Create user
+                        const user = await DynamoDBService.createUser({
                             authId: userData.user.id,
                             email: userData.user.email,
                             name: userData.user.user_metadata.name,
                             imageUrl: userData.user.user_metadata.avatar_url,
-                        },
-                    });
-                    console.log(`User created in database: ${user.id}`);
+                        });
+                        console.log(`User created in database: ${user.id}`);
+                    }
                 }
             }
             catch (error) {

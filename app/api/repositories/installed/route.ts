@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server"
 import { createClient } from '@/utils/supabase/server'
-import { prisma } from "@/lib/prisma"
 import { getInstallationToken, getGitHubInstallationAccessToken } from "@/lib/githubApp"
 import { Octokit } from "octokit"
+import { DynamoDBService } from "@/lib/dynamodb"
 
 export async function GET() {
   const supabase = await createClient()
@@ -14,9 +14,9 @@ export async function GET() {
   }
 
   try {
-    const dbUser = await prisma.users.findUnique({
-      where: { authId: user.id },
-    })
+
+
+    const dbUser = await DynamoDBService.findUserByAuthId(user.id);
 
     if (!dbUser || !dbUser.installationId) {
       return NextResponse.json({ error: "GitHub App installation not found for this user." }, { status: 404 })
@@ -25,8 +25,8 @@ export async function GET() {
     const installationId = dbUser.installationId
 
     const installationToken = await getInstallationToken(parseInt(installationId))
-  
-    const githubTken =  await getGitHubInstallationAccessToken(installationId, installationToken)
+
+    const githubTken = await getGitHubInstallationAccessToken(installationId, installationToken)
 
     // console.log(githubTken, "githubTken")
     const octokit = new Octokit({ auth: githubTken.token })
@@ -36,7 +36,7 @@ export async function GET() {
         'X-GitHub-Api-Version': '2022-11-28'
       }
     })
-    
+
     const repositories = response.repositories
 
     return NextResponse.json({ data: repositories }, { status: 200 })
