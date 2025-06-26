@@ -1,4 +1,4 @@
-# CodeSage - AI Code Review Assistant
+# CodePullAI - AI Code Review Assistant
 
 An intelligent, serverless assistant that performs automated code reviews on pull requests using AI. Built with Next.js, AWS Lambda integration, and GitHub API.
 
@@ -30,8 +30,8 @@ GitHub PR Event → Webhook → API Gateway → Lambda → AI Analysis → GitHu
 ### 1. Clone and Install
 
 \`\`\`bash
-git clone https://github.com/yourusername/codesage
-cd codesage
+git clone https://github.com/yourusername/CodePullAI
+cd CodePullAI
 npm install
 \`\`\`
 
@@ -158,7 +158,7 @@ Visit `/demo` to see a simulated code review process with sample PR data.
 ### Manual Testing
 
 1. Create a test repository
-2. Enable CodeSage integration
+2. Enable CodePullAI integration
 3. Open a pull request
 4. Verify AI comments appear
 

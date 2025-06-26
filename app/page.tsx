@@ -12,7 +12,7 @@ export default function LandingPage() {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Bot className="h-8 w-8 text-blue-600" />
-            <h1 className="text-2xl font-bold text-slate-900">CodeSage</h1>
+            <h1 className="text-2xl font-bold text-slate-900">CodePullAI</h1>
           </div>
           <Link href="/auth">
             <Button>Get Started</Button>
@@ -40,7 +40,7 @@ export default function LandingPage() {
             </Button>
           </Link>
 
-          
+
           <Button variant="outline" size="lg" className="text-lg px-8">
             View Demo
           </Button>
@@ -91,7 +91,7 @@ export default function LandingPage() {
       {/* Benefits */}
       <section className="bg-white py-16">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">Why Choose CodeSage?</h2>
+          <h2 className="text-3xl font-bold text-center mb-12">Why Choose CodePullAI?</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="text-center">
               <Zap className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
@@ -133,7 +133,7 @@ export default function LandingPage() {
         <div className="container mx-auto px-4 text-center">
           <div className="flex items-center justify-center space-x-2 mb-4">
             <Bot className="h-6 w-6" />
-            <span className="text-lg font-semibold">CodeSage</span>
+            <span className="text-lg font-semibold">CodePullAI</span>
           </div>
           <p className="text-slate-400">AI-powered code reviews for better software development</p>
         </div>

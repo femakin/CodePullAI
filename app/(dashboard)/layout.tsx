@@ -18,7 +18,7 @@ const layout = async ({ children }: { children: React.ReactNode }) => {
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
               <Bot className="h-8 w-8 text-blue-600" />
-              <h1 className="text-2xl font-bold text-slate-900">CodeSage</h1>
+              <h1 className="text-2xl font-bold text-slate-900">CodePullAI</h1>
             </div>
             <Badge variant="secondary">Dashboard</Badge>
           </div>

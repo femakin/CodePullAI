@@ -16,7 +16,7 @@ export default function AuthPage() {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center space-x-2 mb-4">
             <Bot className="h-8 w-8 text-blue-600" />
-            <h1 className="text-2xl font-bold text-slate-900">CodeSage</h1>
+            <h1 className="text-2xl font-bold text-slate-900">CodePullAI</h1>
           </div>
           <p className="text-slate-600">Connect your GitHub account to get started</p>
         </div>
@@ -28,27 +28,27 @@ export default function AuthPage() {
               <span>GitHub Integration</span>
             </CardTitle>
             <CardDescription>
-              Authorize CodeSage to access your repositories and create webhooks for automated code reviews.
+              Authorize CodePullAI to access your repositories and create webhooks for automated code reviews.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-              <>
-                <div className="space-y-2 text-sm text-slate-600">
-                  <div className="flex items-center space-x-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span>Read repository information</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span>Create webhooks for pull requests</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span>Post review comments</span>
-                  </div>
+            <>
+              <div className="space-y-2 text-sm text-slate-600">
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  <span>Read repository information</span>
                 </div>
-                <LoginGithub/>
-              </>
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  <span>Create webhooks for pull requests</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  <span>Post review comments</span>
+                </div>
+              </div>
+              <LoginGithub />
+            </>
 
             <div className="text-xs text-slate-500 text-center">
               By connecting, you agree to our Terms of Service and Privacy Policy

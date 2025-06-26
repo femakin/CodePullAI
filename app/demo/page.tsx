@@ -20,33 +20,33 @@ import React, { useState } from 'react'
 export function UserForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
+
     // Simple email validation
     if (email.includes('@')) {
       const response = await fetch('/api/users', {
         method: 'POST',
         body: JSON.stringify({ email, password })
       })
-      
+
       if (response.ok) {
         alert('User created successfully!')
       }
     }
   }
-  
+
   return (
     <form onSubmit={handleSubmit}>
-      <input 
-        type="email" 
+      <input
+        type="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         placeholder="Email"
       />
-      <input 
-        type="password" 
+      <input
+        type="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         placeholder="Password"
@@ -123,7 +123,7 @@ export function UserForm() {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Bot className="h-8 w-8 text-blue-600" />
-            <h1 className="text-2xl font-bold text-slate-900">CodeSage</h1>
+            <h1 className="text-2xl font-bold text-slate-900">CodePullAI</h1>
             <Badge variant="secondary">Demo</Badge>
           </div>
           <Button variant="outline" onClick={() => window.history.back()}>
@@ -135,7 +135,7 @@ export function UserForm() {
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8 text-center">
           <h2 className="text-3xl font-bold text-slate-900 mb-2">Live Demo</h2>
-          <p className="text-slate-600">See how CodeSage analyzes pull requests and provides AI-powered code reviews</p>
+          <p className="text-slate-600">See how CodePullAI analyzes pull requests and provides AI-powered code reviews</p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
@@ -171,9 +171,8 @@ export function UserForm() {
                 {demoSteps.map((step, index) => (
                   <div key={index} className="flex items-center space-x-3">
                     <div
-                      className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
-                        index <= currentStep ? "bg-blue-600 text-white" : "bg-slate-200 text-slate-500"
-                      }`}
+                      className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${index <= currentStep ? "bg-blue-600 text-white" : "bg-slate-200 text-slate-500"
+                        }`}
                     >
                       {index <= currentStep ? <CheckCircle className="h-3 w-3" /> : index + 1}
                     </div>
