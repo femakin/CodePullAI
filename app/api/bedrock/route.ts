@@ -19,11 +19,18 @@ export async function POST(request: NextRequest) {
         const requestBody = {
             anthropic_version: 'bedrock-2023-05-31',
             max_tokens: 4000,
+            /*  messages: [
+                 {
+                     role: 'user',
+                     content: prompt,
+                 },
+             ], */
             messages: [
                 {
-                    role: 'user',
-                    content: prompt,
+                    role: "user",
+                    content: "You are an expert code reviewer. Always respond with valid JSON arrays only."
                 },
+                { role: "user", content: prompt }
             ],
         };
 

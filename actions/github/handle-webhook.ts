@@ -6,6 +6,7 @@ interface ReviewComment {
 }
 
 export function parseDiff(diff: string) {
+  console.log("Parsing diff...", diff);
   const files: any[] = [];
   const fileBlocks = diff.split(/^diff --git /m).slice(1);
   for (const block of fileBlocks) {
@@ -22,6 +23,7 @@ export function parseDiff(diff: string) {
     }
     files.push({ filename, changes });
   }
+  console.log("Parsed files:", files);
   return files;
 }
 
@@ -31,7 +33,7 @@ You are an expert code reviewer. Analyze the following code changes from a pull 
 
 Provide specific, actionable feedback focusing on:
 1. Potential bugs or errors
-2. Security vulnerabilities 
+2. Security vulnerabilities
 3. Performance improvements
 4. Code style and best practices
 5. Maintainability concerns
@@ -45,7 +47,7 @@ ${files.map(f => `File: ${f.filename}\n` +
 
 IMPORTANT: Return ONLY a valid JSON array. Each object must have exactly these fields:
 - "file": string (filename)
-- "line": string (line content) 
+- "line": string (line content)
 - "comment": string (your review comment)
 - "severity": string ("low", "medium", or "high")
 

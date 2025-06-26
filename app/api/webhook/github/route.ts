@@ -55,8 +55,12 @@ async function processCodeReview(prData: {
   try {
     // Get installation token
     const installationToken = await getInstallationToken(prData.installationId)
-  
-    const githubTken =  await getGitHubInstallationAccessToken(prData.installationId.toString(), installationToken)
+
+    const githubTken = await getGitHubInstallationAccessToken(prData.installationId.toString(), installationToken)
+
+
+    console.log(githubTken.token, 'githubTken')
+
 
     // 1. Fetch the diff from GitHub
     const diffResponse = await fetch(prData.diffUrl, {
@@ -66,13 +70,21 @@ async function processCodeReview(prData: {
       },
     })
 
+
+    console.log(diffResponse, 'diffResponse')
+
     const diff = await diffResponse.text()
+
+    console.log(diff, 'diff----------')
+
+    console.log(prData.diffUrl, 'prData.diffUr')
 
     // 2. Parse the diff and extract code changes
     const codeChanges = parseDiff(diff)
 
+
     // 3. Send to AI for review
-    await processReview(codeChanges, prData.prTitle, prData.commentsUrl, githubTken.token)
+    // await processReview(codeChanges, prData.prTitle, prData.commentsUrl, githubTken.token)
 
     console.log(`AI review completed for PR #${prData.prNumber} in ${prData.repo}`)
 
