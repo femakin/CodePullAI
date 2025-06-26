@@ -36,6 +36,7 @@ export async function signInWithOAuth(type: string) {
         },
     })
 
+
     if (error) {
         redirect("/error")
     }

@@ -23,7 +23,7 @@ export function parseDiff(diff: string) {
     }
     files.push({ filename, changes });
   }
-  console.log("Parsed files:", files);
+  /*  console.log("Parsed files:", files); */
   return files;
 }
 
