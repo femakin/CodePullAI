@@ -6,9 +6,9 @@ import "./globals.css"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "CodeSage - AI Code Review Assistant",
+  title: "CodePullAI - AI Code Review Assistant",
   description: "Automatically review your pull requests using AI-powered analysis",
-    generator: 'v0.dev'
+  generator: 'v0.dev'
 }
 
 export default function RootLayout({

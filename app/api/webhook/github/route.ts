@@ -55,21 +55,39 @@ async function processCodeReview(prData: {
   try {
     // Get installation token
     const installationToken = await getInstallationToken(prData.installationId)
-  
-    const githubTken =  await getGitHubInstallationAccessToken(prData.installationId.toString(), installationToken)
 
-    // 1. Fetch the diff from GitHub
-    const diffResponse = await fetch(prData.diffUrl, {
+    const githubTken = await getGitHubInstallationAccessToken(prData.installationId.toString(), installationToken)
+
+    // console.log(githubTken.token, 'githubTken')
+
+    // 1. Fetch the diff from GitHub using the API
+    const [owner, repo] = prData.repo.split('/')
+    // console.log(owner, repo, 'owner and repo')
+    const diffResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/pulls/${prData.prNumber}`, {
       headers: {
         Authorization: `token ${githubTken.token}`,
         Accept: "application/vnd.github.v3.diff",
       },
     })
 
+    // console.log(diffResponse, 'diffResponse')
+
+    if (!diffResponse.ok) {
+      console.error(`Failed to fetch diff: ${diffResponse.status} ${diffResponse.statusText}`)
+      return
+    }
+
     const diff = await diffResponse.text()
+
+    // console.log(diff, 'diff----------')
 
     // 2. Parse the diff and extract code changes
     const codeChanges = parseDiff(diff)
+
+    // console.log(codeChanges, 'codechanges')
+    if (codeChanges.length === 0) {
+      return
+    }
 
     // 3. Send to AI for review
     await processReview(codeChanges, prData.prTitle, prData.commentsUrl, githubTken.token)

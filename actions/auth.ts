@@ -23,7 +23,7 @@ export async function signOut() {
     }
 
     revalidatePath('/', 'layout')
-    redirect('/login')
+    redirect('/')
 }
 
 export async function signInWithOAuth(type: string) {
@@ -36,6 +36,7 @@ export async function signInWithOAuth(type: string) {
         },
     })
 
+
     if (error) {
         redirect("/error")
     }
@@ -43,4 +44,3 @@ export async function signInWithOAuth(type: string) {
         return redirect(data.url)
     }
 }
-

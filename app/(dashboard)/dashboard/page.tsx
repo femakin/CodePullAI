@@ -56,7 +56,7 @@ function InstallAppCard() {
             </Button>
           </Link>
           <p className="text-xs text-slate-500 mt-6 text-center">
-            You will be redirected to GitHub to complete the installation.<br/>
+            You will be redirected to GitHub to complete the installation.<br />
             After installation, return here to see your connected repositories.
           </p>
         </CardContent>
@@ -72,11 +72,11 @@ export default function Dashboard() {
   const router = useRouter()
 
   const [userData, setUserData] = useState<any>(null)
-  
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true)
-      
+
       try {
         // Fetch repositories
         const reposResponse = await fetch("/api/repositories/installed")
@@ -235,7 +235,7 @@ export default function Dashboard() {
       <Alert className="mt-6">
         <Bot className="h-4 w-4" />
         <AlertDescription>
-          When you add a repository, CodeSage will automatically analyze all new pull requests. You can manage repository access at any time via your GitHub settings.
+          When you add a repository, CodePullAI will automatically analyze all new pull requests. You can manage repository access at any time via your GitHub settings.
         </AlertDescription>
       </Alert>
     </div>
