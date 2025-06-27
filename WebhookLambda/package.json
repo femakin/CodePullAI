@@ -1,0 +1,18 @@
+{
+  "name": "webhooklambda",
+  "version": "1.0.0",
+  "description": "CodePullAI Lambda Webhook Handler",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "zip": "zip -r webhook-lambda.zip . -x '*.git*' 'node_modules/.cache/*'"
+  },
+  "dependencies": {
+    "@aws-sdk/client-bedrock-runtime": "^3.835.0",
+    "@octokit/app": "^16.0.1",
+    "crypto": "^1.0.1"
+  },
+  "author": "",
+  "license": "ISC"
+}
