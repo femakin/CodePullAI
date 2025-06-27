@@ -14,9 +14,9 @@ Add the following environment variables to your `.env.local` file:
 
 ```bash
 # AWS Configuration
-AWS_REGION=us-east-1
-AWS_ACCESS_KEY_ID=your_access_key_id
-AWS_SECRET_ACCESS_KEY=your_secret_access_key
+NEXT_AWS_REGION=us-east-1
+NEXT_AWS_ACCESS_KEY_ID=your_access_key_id
+NEXT_AWS_SECRET_ACCESS_KEY=your_secret_access_key
 
 # DynamoDB Configuration
 DYNAMODB_USERS_TABLE=users
@@ -104,7 +104,7 @@ If you have existing user data in your current database, you'll need to create a
 1. **Access Denied**: Ensure your AWS credentials have DynamoDB permissions
 2. **Table Not Found**: Run the setup script or create the table manually
 3. **Index Not Found**: Ensure the GSI `email-index` is created
-4. **Region Mismatch**: Verify `AWS_REGION` matches your DynamoDB table region
+4. **Region Mismatch**: Verify `NEXT_AWS_REGION` matches your DynamoDB table region
 
 ### Permissions Required
 
