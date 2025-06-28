@@ -13,8 +13,9 @@ export async function GET(request: Request) {
         const supabase = await createClient()
         const { error, data } = await supabase.auth.exchangeCodeForSession(code)
 
-        // console.log(error, "error error error")
-        // console.log(data, "data data data")
+        console.log(error, "error error error")
+
+        console.log(data, "data data data")
 
         if (!error) {
             // Add new user to database
@@ -22,7 +23,7 @@ export async function GET(request: Request) {
 
             // console.log(userData, "userData")
 
-            // console.log(userError, "userError")
+            // console.aclog(userError, "userError")
 
             if (userError) {
                 console.log("Error fetching user data", userError?.message)
@@ -32,6 +33,7 @@ export async function GET(request: Request) {
             try {
                 // Check if user already exists first
                 if (userData.user.email) {
+                    
                     const existingUser = await DynamoDBService.findUserByEmail(userData.user.email);
 
                     if (!existingUser) {
