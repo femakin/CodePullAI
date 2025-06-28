@@ -1,6 +1,6 @@
-# CodePullAI - AI Code Review Assistant
+# CodePullAI - AI Code Review Assistant (Powered by AWS Lambda and AWS API Gateway)
 
-An intelligent, serverless assistant that performs automated code reviews on pull requests using AI. Built with Next.js, AWS Lambda integration, and GitHub API.
+An intelligent, serverless AI Code Review assistant that performs automated code reviews on pull requests using AI. Built with **Amazon Bedrock, AWS Lambda, AWS API Gateway, AWS Amplify, AWS DynamoDB, Next.js and GitHub API**.
 
 ## 🚀 Features
 
@@ -13,41 +13,91 @@ An intelligent, serverless assistant that performs automated code reviews on pul
 
 ## 🏗️ Architecture
 
-\`\`\`
-GitHub PR Event → Webhook → API Gateway → Lambda → AI Analysis → GitHub Comments
-\`\`\`
+
+       ┌────────────────────┐
+       │   Developer PR     │
+       │   on GitHub Repo   │
+       └────────┬───────────┘
+                │ Webhook Event
+                ▼
+       ┌────────────────────┐
+       │    GitHub Webhook  │
+       └────────┬───────────┘
+                ▼
+       ┌────────────────────┐
+       │  API Gateway       │
+       │  /webhook endpoint │
+       └────────┬───────────┘
+                ▼
+       ┌────────────────────────────────────────────┐
+       │ 🧠 LAMBDA FUNCTION                          │
+       │ - Validates GitHub Signature                │
+       │ - Fetches PR Metadata + Code Diff           │
+       │ - Stores/updates in DynamoDB                │
+       │ - Sends code to Amazon Bedrock for Review   │
+       │ - Formats Review                            │
+       │ - Posts Comment via GitHub API              │
+       └────────────┬────────────────────────────────┘
+                    ▼
+       ┌────────────────────────┐
+       │ DynamoDB (Metadata DB) │
+       └────────────────────────┘
+
+       ┌────────────────────────────┐
+       │ Amazon Bedrock             │
+       │ (Claude Models)            │
+       └────────────────────────────┘
+
+       ┌────────────────────────┐
+       │ GitHub API (PR Comment)│
+       └────────────────────────┘
+
+            Frontend Flow 
+
+       ┌────────────────────────────┐
+       │     Next.js Frontend       │
+       │  (Hosted via Amplify)      │
+       └────────────┬───────────────┘ 
 
 ### Tech Stack
 
-- **Frontend**: Next.js 14 with App Router, Tailwind CSS, shadcn/ui
-- **Backend**: Next.js API Routes, AWS Lambda integration
-- **AI**: OpenAI GPT-4 or Amazon Bedrock (Claude/Titan)
+- **Backend**: API Gateway, AWS Lambda integration
+- **AI**: Amazon Bedrock (Claude)
+- **Database**: DynamoDB
+- **Deployment**: AWS Amplify (frontend) + AWS Lambda (serverless functions)
 - **Integration**: GitHub API, GitHub OAuth, GitHub Webhooks
-- **Deployment**: Vercel (frontend) + AWS Lambda (serverless functions)
+- **Frontend**: Next.js 15 with App Router, Tailwind CSS, shadcn/ui
 
 ## 🛠️ Setup Instructions
 
 ### 1. Clone and Install
 
-\`\`\`bash
-git clone https://github.com/yourusername/CodePullAI
+```bash
+git clone https://github.com/femakin/CodePullAI.git
 cd CodePullAI
 npm install
-\`\`\`
+```
 
 ### 2. Environment Variables
 
-Copy `.env.example` to `.env.local` and fill in your credentials:
+Copy `.env.example` to `.env` and fill in your credentials:
 
-\`\`\`bash
-cp .env.example .env.local
-\`\`\`
+```bash
+cp .env.example .env
+```
+Required Environment Variables
 
-Required variables:
 - `GITHUB_TOKEN`: Personal Access Token with repo permissions
-- `GITHUB_CLIENT_ID` & `GITHUB_CLIENT_SECRET`: OAuth App credentials
-- `OPENAI_API_KEY`: For AI code analysis
-- `WEBHOOK_SECRET`: Secure webhook validation
+- `GITHUB_CLIENT_ID` & `GITHUB_CLIENT_SECRET`: OAuth App credentials  
+- `GITHUB_WEBHOOK_SECRET`: Secure webhook validation
+- `GITHUB_APP_ID`: Secure GitHub App ID
+- `NEXT_AWS_ACCESS_KEY_ID`: AWS access key for authentication
+- `NEXT_AWS_SECRET_ACCESS_KEY`: AWS secret key for authentication
+- `NEXT_AWS_REGION`: AWS region for services (e.g., us-east-1)
+- `BEDROCK_MODEL_ID`: Amazon Bedrock model identifier for AI services
+- `GITHUB_APP_PRIVATE_KEY`: Private key for GitHub App authentication
+- `NEXT_PUBLIC_SUPABASE_URL`: Supabase project URL for database connection
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Supabase anonymous key for client-side access
 - `NEXT_PUBLIC_APP_URL`: Your app's public URL
 
 ### 3. GitHub OAuth App Setup
@@ -59,9 +109,9 @@ Required variables:
 
 ### 4. Run Development Server
 
-\`\`\`bash
+```bash
 npm run dev
-\`\`\`
+```
 
 Visit `http://localhost:3000` to see the application.
 
@@ -92,28 +142,12 @@ The AI analyzes code for:
 - **Bug Detection**: Logic errors, edge cases, type issues
 - **Maintainability**: Code complexity, documentation needs
 
-## 📁 Project Structure
-
-\`\`\`
-├── app/
-│   ├── page.tsx              # Landing page
-│   ├── auth/page.tsx         # GitHub OAuth
-│   ├── dashboard/page.tsx    # Repository management
-│   ├── demo/page.tsx         # Live demo
-│   └── api/
-│       ├── webhook/github/   # Webhook handler
-│       └── repositories/     # Repo management API
-├── components/ui/            # shadcn/ui components
-├── lib/                      # Utilities
-└── README.md
-\`\`\`
-
 ## 🚀 Deployment
 
-### Vercel Deployment
+### AWS Amplify Deployment
 
-1. Connect your GitHub repo to Vercel
-2. Add environment variables in Vercel dashboard
+1. Connect your GitHub repo to AWS Amplify
+2. Add environment variables in Amplify console under App Settings > Environment variables
 3. Deploy automatically on push to main
 
 ### AWS Lambda Setup
@@ -134,39 +168,14 @@ The app listens for these GitHub events:
 - `pull_request.synchronize`
 - `pull_request.reopened`
 
-### AI Model Configuration
 
-Customize the AI prompts in `/app/api/webhook/github/route.ts`:
-
-\`\`\`typescript
-const prompt = `
-You are an expert code reviewer. Focus on:
-1. Security vulnerabilities
-2. Performance issues
-3. Best practices
-4. Potential bugs
-...
-`
-\`\`\`
-
-## 🧪 Testing
-
-### Run the Demo
-
-Visit `/demo` to see a simulated code review process with sample PR data.
-
-### Manual Testing
+### Testing
 
 1. Create a test repository
 2. Enable CodePullAI integration
 3. Open a pull request
 4. Verify AI comments appear
 
-## 📊 Monitoring
-
-- Check Vercel deployment logs for frontend issues
-- Monitor AWS CloudWatch for Lambda function logs
-- GitHub webhook delivery logs for debugging
 
 ## 🤝 Contributing
 
@@ -183,8 +192,7 @@ MIT License - see LICENSE file for details.
 ## 🆘 Support
 
 - GitHub Issues: Report bugs and feature requests
-- Documentation: Check the wiki for detailed guides
-- Community: Join our Discord for discussions
+
 
 ---
 
