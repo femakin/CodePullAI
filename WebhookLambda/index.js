@@ -1,12 +1,12 @@
 import crypto from 'crypto'
-import { getGitHubInstallationAccessToken, getInstallationToken, parseDiff, processReview } from './lib/githubActions'
+import { getGitHubInstallationAccessToken, getInstallationToken, parseDiff, processReview } from './lib/githubActions.js'
 
-// Lambda handler function
 export const handler = async (event, context) => {
+
     try {
         // --- Webhook signature verification ---
-        const signature = event.headers["x-hub-signature-256"];
-        const rawBody = event.body;
+        const signature = event.headers["X-Hub-Signature-256"];
+        const rawBody = event.body; // Use the raw string body, not parsed JSON
         const secret = process.env.GITHUB_WEBHOOK_SECRET;
 
         if (!secret) {
@@ -18,18 +18,20 @@ export const handler = async (event, context) => {
         }
 
         const hmac = crypto.createHmac("sha256", secret);
-        const digest = "sha256=" + hmac.update(rawBody).digest("hex");
+        const digest = "sha256=" + hmac.update(rawBody, 'utf8').digest("hex");
 
         if (!signature || !crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(digest))) {
+            console.error("Invalid signature - Expected:", digest, "Received:", signature);
             return {
                 statusCode: 401,
                 body: JSON.stringify({ error: "Invalid signature" })
             };
         }
 
-        // Parse JSON after signature check
+        // Parse JSON after signature verification
         const payload = JSON.parse(rawBody);
-        const eventType = event.headers["x-github-event"];
+
+        const eventType = event.headers["X-GitHub-Event"];
 
         // Handle pull request events
         if (eventType === "pull_request") {
@@ -37,6 +39,8 @@ export const handler = async (event, context) => {
             const pullRequest = payload.pull_request;
             const repository = payload.repository;
             const installationId = payload.installation?.id;
+
+            console.log(`Processing PR ${action} event for ${repository.full_name}#${pullRequest.number}`);
 
             // Only process opened, synchronize, or reopened PRs
             if (["opened", "synchronize", "reopened"].includes(action) && installationId) {

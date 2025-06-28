@@ -1,6 +1,6 @@
 # DynamoDB Setup Guide
 
-This guide explains how to set up DynamoDB to replace the existing Supabase/Prisma database for user management.
+This guide explains how to set up DynamoDB
 
 ## Prerequisites
 
