@@ -87,7 +87,6 @@ cp .env.example .env
 ```
 Required Environment Variables
 
-- `GITHUB_TOKEN`: Personal Access Token with repo permissions
 - `GITHUB_CLIENT_ID` & `GITHUB_CLIENT_SECRET`: OAuth App credentials  
 - `GITHUB_WEBHOOK_SECRET`: Secure webhook validation
 - `GITHUB_APP_ID`: Secure GitHub App ID
