@@ -50,7 +50,7 @@ export async function getGitHubInstallationAccessToken(installationId, jwt) {
 }
 
 export function parseDiff(diff) {
-    console.log("Parsing diff...", diff);
+    // console.log("Parsing diff...", diff);
     const files = [];
     const fileBlocks = diff.split(/^diff --git /m).slice(1);
     for (const block of fileBlocks) {
@@ -134,7 +134,7 @@ Example format:
         }
 
         const responseText = new TextDecoder().decode(response.body);
-        console.log('Response text length:', responseText.length);
+        // console.log('Response text length:', responseText.length);
 
         let responseBody;
         try {
@@ -256,7 +256,7 @@ export async function postGitHubComment(commentsUrl, review, token) {
 
 export async function processReview(files, prTitle, commentsUrl, token) {
     try {
-        console.log(`Starting AI review process for PR: "${prTitle}" with ${files.length} files`);
+        // console.log(`Starting AI review process for PR: "${prTitle}" with ${files.length} files`);
 
         const aiReview = await getAIReviewWithRetry(files, prTitle);
 
@@ -272,7 +272,7 @@ export async function processReview(files, prTitle, commentsUrl, token) {
             try {
                 await postGitHubComment(commentsUrl, review, token);
                 successCount++;
-                console.log(`Successfully posted comment ${successCount}/${aiReview.length}`);
+                // console.log(`Successfully posted comment ${successCount}/${aiReview.length}`);
             } catch (error) {
                 errorCount++;
                 const errorMessage = error instanceof Error ? error.message : 'Unknown error';

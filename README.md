@@ -12,7 +12,6 @@ An intelligent, serverless AI Code Review assistant that automatically analyzes 
 - **📈 Best Practices**: Suggests improvements for code quality and performance
 - **🌐 Multi-language Support**: Works with JavaScript, TypeScript, Python, and more
 
-
 ## 🏗️ System Architecture
 
 ```
@@ -23,7 +22,7 @@ An intelligent, serverless AI Code Review assistant that automatically analyzes 
                                                       │
                                                       ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                    Next.js API Route                           │
+│                    AWS Lambda Function                          │
 │  ┌─────────────────────────────────────────────────────────┐   │
 │  │ 1. Validate GitHub Signature                            │   │
 │  │ 2. Fetch PR Diff via GitHub API                         │   │
@@ -56,6 +55,7 @@ Before you begin, ensure you have:
 - **AWS Account** with appropriate permissions
 - **Supabase Account** for authentication
 - **GitHub App** (we'll create this)
+- **AWS CLI** configured (for Lambda deployment)
 
 ## 📋 Complete Setup Guide
 
@@ -76,7 +76,6 @@ Create a `.env.local` file in the root directory:
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 
-
 # GitHub App Configuration
 GITHUB_APP_ID=your_github_app_id
 GITHUB_APP_PRIVATE_KEY=your_github_app_private_key_base64
@@ -92,7 +91,6 @@ BEDROCK_MODEL_ID=your-model-id
 
 # Application Configuration
 NEXT_PUBLIC_APP_URL=http://localhost:3000
-
 ```
 
 ### Step 3: Supabase Setup (Authentication)
@@ -107,11 +105,11 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
    - Enable GitHub provider
    - Add your GitHub OAuth credentials (we'll create these next)
 
-3. **Database Setup**:
-   ```bash
-   npx prisma generate
-   npx prisma db push
-   ```
+<!-- 3. **Database Setup**: -->
+   <!-- ```bash -->
+ <!--   # npx prisma generate -->
+   <!-- npx prisma db push -->
+   <!-- ``` -->
 
 ### Step 4: GitHub App Setup
 
@@ -121,7 +119,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
    - Fill in the details:
      - **App name**: `CodePullAI`
      - **Homepage URL**: `http://localhost:3000`
-     - **Webhook URL**: `http://localhost:3000/api/webhook/github`
+     - **Webhook URL**: `https://your-api-gateway-url.amazonaws.com/webhook`
      - **Webhook secret**: Generate a secure random string
 
 2. **Configure Permissions**:
@@ -152,6 +150,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
    - Attach policies for:
      - `AmazonBedrockFullAccess`
      - `AmazonDynamoDBFullAccess`
+     - `AWSLambdaBasicExecutionRole`
 
 2. **Setup DynamoDB**:
    ```bash
@@ -163,7 +162,75 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
    - Request access to Claude models
    - Note the model ID (e.g., `anthropic.claude-3-sonnet-20240229-v1:0`)
 
-### Step 6: Run the Application
+### Step 6: Lambda Function Setup
+
+1. **Prepare Lambda Package**:
+   ```bash
+   cd WebhookLambda
+   npm install
+   npm run zip
+   ```
+
+2. **Create Lambda Function**:
+   - Go to AWS Lambda Console
+   - Click "Create function"
+   - Choose "Author from scratch"
+   - **Function name**: `CodePullAI-Webhook`
+   - **Runtime**: Node.js 18.x
+   - **Architecture**: x86_64
+   - Click "Create function"
+
+3. **Upload Code**:
+   - In the Lambda function, go to "Code" tab
+   - Click "Upload from" → ".zip file"
+   - Upload the `webhook-lambda.zip` file
+
+4. **Configure Environment Variables**:
+   ```bash
+   GITHUB_APP_ID=your_github_app_id
+   GITHUB_APP_PRIVATE_KEY=your_github_app_private_key_base64
+   GITHUB_WEBHOOK_SECRET=your_webhook_secret
+   NEXT_AWS_REGION=us-east-1
+   NEXT_AWS_ACCESS_KEY_ID=your_aws_access_key
+   NEXT_AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+   BEDROCK_MODEL_ID=your-model-id
+   ```
+
+5. **Set Function Timeout**:
+   - Go to "Configuration" → "General configuration"
+   - Set timeout to 30 seconds
+   - Click "Save"
+
+### Step 7: API Gateway Setup
+
+1. **Create API Gateway**:
+   - Go to API Gateway Console
+   - Click "Create API"
+   - Choose "REST API" → "Build"
+   - **API name**: `CodePullAI-Webhook`
+   - Click "Create API"
+
+2. **Create Resource and Method**:
+   - Click "Actions" → "Create Resource"
+   - **Resource Name**: `webhook`
+   - Click "Create Resource"
+   - Click "Actions" → "Create Method"
+   - Select "POST" → Click checkmark
+   - **Integration type**: Lambda Function
+   - **Lambda Function**: `CodePullAI-Webhook`
+   - Click "Save"
+
+3. **Deploy API**:
+   - Click "Actions" → "Deploy API"
+   - **Deployment stage**: `prod`
+   - Click "Deploy"
+   - Note the **Invoke URL** (e.g., `https://abc123.execute-api.us-east-1.amazonaws.com/prod`)
+
+4. **Update GitHub App Webhook URL**:
+   - Go back to your GitHub App settings
+   - Update the webhook URL to: `https://your-api-gateway-url.amazonaws.com/prod/webhook`
+
+### Step 8: Run the Application
 
 ```bash
 npm run dev
@@ -181,13 +248,20 @@ Visit `http://localhost:3000` to see the application.
 4. **User creation** → User data stored in DynamoDB with installation ID
 5. **Dashboard access** → User can now manage repositories
 
-### Webhook Flow
+### Webhook Flow (Lambda)
 
-1. **PR Created/Updated** → GitHub sends webhook to `/api/webhook/github`
-2. **Signature Validation** → Verify webhook authenticity
-3. **Diff Fetching** → Get PR diff via GitHub API
-4. **AI Analysis** → Send code changes to Amazon Bedrock
-5. **Comment Posting** → Post AI review comments to GitHub PR
+1. **PR Created/Updated** → GitHub sends webhook to API Gateway
+2. **API Gateway** → Routes request to Lambda function
+3. **Signature Validation** → Lambda verifies webhook authenticity
+4. **Diff Fetching** → Lambda gets PR diff via GitHub API
+5. **AI Analysis** → Lambda sends code changes to Amazon Bedrock
+6. **Comment Posting** → Lambda posts AI review comments to GitHub PR
+
+### Database Architecture
+
+- **Frontend (Next.js)**: Uses Prisma with Supabase PostgreSQL for user authentication and session management
+- **Lambda Function**: Uses DynamoDB directly via AWS SDK for any data storage needs
+- **Separation**: The Lambda function is completely independent and doesn't require Prisma setup
 
 ### AI Review Process
 
@@ -200,54 +274,54 @@ The AI analyzes code for:
 
 ## 🚀 Deployment
 
-### Option 1: Vercel Deployment
 
-1. **Connect Repository**:
-   - Push code to GitHub
-   - Connect to Vercel
-   - Add environment variables in Vercel dashboard
 
-2. **Update Webhook URL**:
-   - Update GitHub App webhook URL to your Vercel domain
-   - Update `NEXT_PUBLIC_APP_URL` in environment variables
+### AWS Amplify
 
-### Option 2: AWS Amplify
-
-1. **Connect Repository**:
+1. **Deploy Frontend**:
    - Go to AWS Amplify Console
    - Connect your GitHub repository
    - Add environment variables
+   - Update `NEXT_PUBLIC_APP_URL` to your Amplify domain
 
 2. **Build Settings**:
    ```yaml
    version: 1
-   frontend:
-     phases:
-       preBuild:
-         commands:
-           - npm ci
-           - npx prisma generate
-       build:
-         commands:
-           - npm run build
+   applications:
+     - frontend:
+         phases:
+           preBuild:
+             commands:
+               - npm install --force
+           build:
+             commands:
+               - env | grep -E "WEBHOOK_SECRET|GITHUB_WEBHOOK_SECRET|GITHUB_APP_ID|NEXT_AWS_ACCESS_KEY_ID|NEXT_AWS_SECRET_ACCESS_KEY|NEXT_AWS_REGION|BEDROCK_MODEL_ID|DATABASE_URL|DIRECT_URL|WEBHOOK_SECRET|GITHUB_APP_PRIVATE_KEY|NEXT_PUBLIC_SUPABASE_URL|NEXT_PUBLIC_SUPABASE_ANON_KEY|NEXT_PUBLIC_APP_URL" >> .env.production
+               - npm run build
+         artifacts:
+           baseDirectory: .next
+           files:
+             - "**/*"
+         cache:
+           paths:
+             - .next/cache/**/*
+             - node_modules/**/*
    ```
 
-### Option 3: Production Lambda (Optional)
+### Option 3: Production Lambda Updates
 
-For high-traffic scenarios, deploy the webhook handler as a separate Lambda:
+For production updates to the Lambda function:
 
-1. **Package Lambda**:
+1. **Update Code**:
    ```bash
    cd WebhookLambda
-   npm install
+   # Make your changes
    npm run zip
    ```
 
-2. **Deploy to AWS Lambda**:
-   - Create Lambda function
-   - Upload the zip file
-   - Configure API Gateway trigger
-   - Update GitHub webhook URL
+2. **Deploy to Lambda**:
+   - Go to Lambda Console
+   - Upload new zip file
+   - Test the function
 
 ## 🧪 Testing
 
@@ -259,13 +333,14 @@ For high-traffic scenarios, deploy the webhook handler as a separate Lambda:
 4. Complete the OAuth flow
 5. Verify user appears in DynamoDB
 
-### Test Webhook
+### Test Lambda Webhook
 
-1. Create a test repository
-2. Install your GitHub App on the repository
-3. Create a pull request with some code changes
-4. Check the application logs for webhook processing
-5. Verify AI comments appear on the PR
+1. **Test with Real PR**:
+   - Create a test repository
+   - Install your GitHub App on the repository
+   - Create a pull request with some code changes
+   - Check Lambda CloudWatch logs for processing
+   - Verify AI comments appear on the PR
 
 ### Test AI Review
 
@@ -285,18 +360,32 @@ For high-traffic scenarios, deploy the webhook handler as a separate Lambda:
 
 ## 🔧 Configuration
 
+### Lambda Environment Variables
+
+Ensure these are set in your Lambda function:
+
+```bash
+GITHUB_APP_ID=your_github_app_id
+GITHUB_APP_PRIVATE_KEY=your_github_app_private_key_base64
+GITHUB_WEBHOOK_SECRET=your_webhook_secret
+NEXT_AWS_REGION=us-east-1
+NEXT_AWS_ACCESS_KEY_ID=your_aws_access_key
+NEXT_AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+BEDROCK_MODEL_ID=your-model-id
+```
+
 ### Webhook Events
 
-The app listens for these GitHub events:
+The Lambda function listens for these GitHub events:
 - `pull_request.opened`
 - `pull_request.synchronize`
 - `pull_request.reopened`
 
 ### AI Model Configuration
 
-You can customize the AI behavior by modifying the prompt in `actions/github/handle-webhook.ts`:
+You can customize the AI behavior by modifying the prompt in `WebhookLambda/lib/githubActions.js`:
 
-```typescript
+```javascript
 const prompt = `
 You are an expert code reviewer. Analyze the following code changes...
 // Customize this prompt for your specific needs
@@ -305,7 +394,7 @@ You are an expert code reviewer. Analyze the following code changes...
 
 ### Rate Limiting
 
-The application includes retry logic for AI API calls:
+The Lambda function includes retry logic for AI API calls:
 - Maximum 3 retry attempts
 - Exponential backoff between retries
 - Graceful handling of rate limits
@@ -315,56 +404,52 @@ The application includes retry logic for AI API calls:
 ### Common Issues
 
 1. **Webhook Not Receiving Events**:
-   - Check webhook URL is accessible
-   - Verify webhook secret matches
+   - Check API Gateway URL is accessible
+   - Verify webhook secret matches in Lambda
    - Check GitHub App permissions
+   - Review Lambda CloudWatch logs
 
-2. **AI Review Not Working**:
-   - Verify AWS credentials
+2. **Lambda Function Errors**:
+   - Check CloudWatch logs for detailed error messages
+   - Verify all environment variables are set
+   - Ensure Lambda has proper IAM permissions
+   - Check function timeout settings
+
+3. **AI Review Not Working**:
+   - Verify AWS credentials in Lambda
    - Check Bedrock model access
    - Review API rate limits
+   - Check Lambda logs for AI API errors
 
-3. **Authentication Issues**:
+4. **Authentication Issues**:
    - Verify Supabase configuration
    - Check GitHub OAuth settings
    - Ensure callback URLs match
 
-4. **Database Errors**:
-   - Run Prisma migrations
-   - Check DynamoDB table exists
-   - Verify AWS permissions
 
-### Debug Mode
+### CloudWatch Monitoring
 
-Enable debug logging by adding to your environment:
+Monitor your Lambda function:
+1. **Logs**: Check CloudWatch logs for errors
+2. **Metrics**: Monitor invocation count, duration, errors
+3. **Alarms**: Set up CloudWatch alarms for errors
 
-```bash
-DEBUG=* npm run dev
-```
 
-## 📊 Monitoring
+### Cost Optimization
 
-### Logs to Monitor
-
-1. **Webhook Processing**: Check for successful PR analysis
-2. **AI API Calls**: Monitor Bedrock API usage and costs
-3. **Authentication**: Track user sign-ups and installations
-4. **Error Rates**: Monitor failed webhook deliveries
-
-### Metrics to Track
-
-- Number of PRs analyzed per day
-- Average AI response time
-- User engagement (repositories connected)
-- Error rates by component
+1. **Lambda**: Monitor execution time and memory usage
+2. **Bedrock**: Track API calls and token usage
+3. **DynamoDB**: Monitor read/write capacity
+4. **API Gateway**: Track request count
 
 ## 🔒 Security Considerations
 
-1. **Webhook Security**: Always validate GitHub signatures
-2. **API Keys**: Store secrets in environment variables
+1. **Webhook Security**: Always validate GitHub signatures in Lambda
+2. **API Keys**: Store secrets in Lambda environment variables
 3. **Rate Limiting**: Implement proper rate limiting
 4. **Access Control**: Use least privilege principle for AWS permissions
 5. **Data Privacy**: Review what data is stored and processed
+6. **VPC**: Consider running Lambda in VPC for additional security
 
 ## 🤝 Contributing
 
@@ -381,7 +466,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🆘 Support
 
 - **GitHub Issues**: [Report bugs and feature requests](https://github.com/femakin/CodePullAI/issues)
-- **Documentation**: Check the [DYNAMODB_SETUP.md](DYNAMODB_SETUP.md) for additional setup details
+
 
 ## 🙏 Acknowledgments
 
@@ -394,4 +479,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Ready to automate your code reviews?** 🚀
 
-Follow this guide step-by-step and you'll have a fully functional AI code review assistant running in no time!
+Follow this guide step-by-step and you'll have a fully functional AI code review assistant running with serverless Lambda webhooks!
