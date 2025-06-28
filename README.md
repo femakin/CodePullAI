@@ -1,6 +1,6 @@
 # [CodePullAI](https://www.codepullai.site) - AI-Powered Code Review Assistant
 
-An intelligent, serverless AI Code Review assistant that automatically analyzes pull requests and provides intelligent feedback using Amazon Bedrock. Built with **AWS Lambda, API Gateway, DynamoDB, Supabase Auth, Next.js, and GitHub API**.
+An intelligent, serverless AI Code Review assistant that automatically analyzes pull requests and provides intelligent feedback using Amazon Bedrock. Built with **AWS Lambda, API Gateway, DynamoDB, Amazon Bedrock, Supabase Auth, Next.js, and GitHub API**.
 
 ## 🚀 Features
 
