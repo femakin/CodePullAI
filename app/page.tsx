@@ -41,9 +41,11 @@ export default function LandingPage() {
           </Link>
 
 
-          <Button variant="outline" size="lg" className="text-lg px-8">
-            View Demo
-          </Button>
+          <Link href="https://youtu.be/1kUNkZaaulk" target="_blank" rel="noopener noreferrer">
+            <Button variant="outline" size="lg" className="text-lg px-8">
+              View Demo
+            </Button>
+          </Link>
         </div>
       </section>
 
