@@ -1,0 +1,24 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>XSS Test</title>
+</head>
+<body>
+  <h2>Search Page</h2>
+  <form>
+    <input type="text" id="query" name="query" placeholder="Search...">
+    <button type="button" onclick="search()">Search</button>
+  </form>
+
+  <div id="results"></div>
+
+  <script>
+    function search() {
+      const query = document.getElementById('query').value;
+      document.getElementById('results').innerHTML = `You searched for: ${query}`;
+    }
+  </script>
+</body>
+</html>
